@@ -280,7 +280,7 @@
                     </div>
                     
                     <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg mt-2 transition-all duration-200 transform hover:scale-105 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Genera con Nano Banana
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Genera
                     </button>
                     
                     <p class="text-xs text-gray-200 text-center">Richiede connessione API attiva.</p>
@@ -636,7 +636,7 @@
         <div class="lg:col-span-8 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
             <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 min-h-[600px] flex flex-col items-center justify-center relative overflow-hidden p-8">
                 <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">Nano Banana Pro sta dipingendo...</p>
+                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
                 </div>
                 <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
                 <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
@@ -1591,6 +1591,9 @@
                 if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi Titolo e Tema!");
                 
                 els.loader.classList.remove('hidden');
+                // AGGIUNTA LOGICA PER RESETTARE IL TESTO DEL LOADER AL MESSAGGIO DI GENERAZIONE
+                els.loaderText.innerText = "la tua cover è in arrivo..........";
+                
                 els.modificationPrompt.value = ''; 
                 state.mode = 'kindle';
                 state.lastActiveMode = 'kindle'; 

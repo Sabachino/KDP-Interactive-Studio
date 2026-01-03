@@ -238,13 +238,6 @@
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
             </div>
             <div class="flex items-center gap-4">
-                 <div id="proStatus" class="hidden text-xs font-bold text-green-400 bg-green-900/50 px-3 py-1 rounded-full border border-green-500">
-                    <i class="fa-solid fa-crown mr-2"></i>PRO ACTIVATED
-                </div>
-                <button id="buyCreditsBtn" class="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-lg transition-transform transform hover:scale-105">
-                    <i class="fa-solid fa-credit-card mr-2"></i> Acquista Versione PRO
-                </button>
-
                 <div class="text-xs font-mono text-gray-400 bg-gray-700 px-3 py-1 rounded-full">
                     <i class="fa-solid fa-pen-ruler mr-2"></i>Design Mode
                 </div>
@@ -675,7 +668,6 @@
             // --- STRIPE CONFIGURATION ---
             // Sostituisci con la tua Public Key di Stripe (pk_test_...)
             const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY'); 
-            let isPremiumUser = false;
 
             const state = { 
                 mode: 'kindle', 
@@ -806,31 +798,8 @@
                 alignLeftBtn: document.getElementById('alignLeftBtn'),
                 alignCenterBtn: document.getElementById('alignCenterBtn'),
                 alignRightBtn: document.getElementById('alignRightBtn'),
-                resetBtn: document.getElementById('resetBtn'),
-                buyCreditsBtn: document.getElementById('buyCreditsBtn'),
-                proStatus: document.getElementById('proStatus')
+                resetBtn: document.getElementById('resetBtn')
             };
-
-            // --- STRIPE PAYMENT FUNCTION ---
-            async function handleStripeCheckout() {
-                // In una vera app, chiameresti il tuo backend: /create-checkout-session
-                // Qui simuliamo il processo o mostriamo come farebbe il redirect
-                
-                if(confirm("Vuoi procedere all'acquisto della versione PRO per sbloccare il download HD? (Simulazione Checkout)")) {
-                    // SIMULAZIONE PAGAMENTO RIUSCITO
-                    isPremiumUser = true;
-                    alert("Pagamento simulato con successo! Funzioni PRO sbloccate.");
-                    els.proStatus.classList.remove('hidden');
-                    els.buyCreditsBtn.classList.add('hidden');
-                } else {
-                    /* CODICE REALE SAREBBE:
-                    const response = await fetch('/create-checkout-session', { method: 'POST' });
-                    const session = await response.json();
-                    const result = await stripe.redirectToCheckout({ sessionId: session.id });
-                    if (result.error) alert(result.error.message);
-                    */
-                }
-            }
 
             // --- FUNCTIONS ---
             
@@ -1621,43 +1590,18 @@
             async function generateBaseArtwork() {
                 if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi Titolo e Tema!");
                 
-                // CHECK if user is premium if you want to gate generation
-                // if(!isPremiumUser) { handleStripeCheckout(); return; }
-
                 els.loader.classList.remove('hidden');
                 els.modificationPrompt.value = ''; 
                 state.mode = 'kindle';
                 state.lastActiveMode = 'kindle'; 
                 
-                // --- PROFESSIONAL API CALL (MOCKED) ---
-                // Qui dovresti inserire la logica di fetch reale verso Nano Banana
                 try {
                     console.log("Iniziando generazione professionale con Nano Banana...");
                     
                     // --- MOCK RESPONSE PER DIMOSTRAZIONE ---
-                    // Sostituire questo blocco con fetch reale
                     const mockPrompt = (els.titleInput.value || "") + " " + (els.mood.value || "") + " book cover design, high quality, vertical aspect ratio";
                     const randomSeed = Math.floor(Math.random() * 99999);
-                    // Usiamo un servizio placeholder affidabile per la demo visuale
                     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(mockPrompt)}?width=800&height=1200&nologo=true&seed=${randomSeed}`;
-                    
-                    /* ESEMPIO DI CHIAMATA REALE NANO BANANA:
-                    const res = await fetch(NANO_BANANA_ENDPOINT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${NANO_BANANA_API_KEY}`
-                        },
-                        body: JSON.stringify({
-                            prompt: mockPrompt,
-                            aspect_ratio: "2:3",
-                            width: 800,
-                            height: 1200
-                        })
-                    });
-                    const data = await res.json();
-                    const imageUrl = data.url; // o data.image_base64
-                    */
 
                     const response = await fetch(imageUrl);
                     if (!response.ok) throw new Error("Errore nel download dell'immagine.");
@@ -1694,19 +1638,46 @@
                 }
             }
             
-            // --- MODIFIED RENDER AND DOWNLOAD FUNCTION (STRIPE GATED) ---
+            // --- MODIFIED RENDER AND DOWNLOAD FUNCTION (PAY-PER-DOWNLOAD) ---
             function renderAndDownload(type) {
-                // GATE: Check if user paid
-                if(!isPremiumUser) {
-                    handleStripeCheckout();
-                    return;
+                // 1. Controllo Contenuto
+                if (!state.generatedImageB64 && !state.printFrontImage) return alert("Nessun design da esportare!");
+
+                // 2. Definizione Prezzo e Oggetto
+                let price, itemName;
+                if(type === 'kindle') {
+                    price = "4.99€";
+                    itemName = "Kindle Cover HD (JPG)";
+                } else {
+                    price = "9.99€";
+                    itemName = "KDP Print Layout (300DPI)";
                 }
 
-                if (!state.generatedImageB64 && !state.printFrontImage) return alert("Nessun design da esportare!");
-                els.loader.classList.remove('hidden'); 
-                els.loaderText.innerText = "Preparazione export alta risoluzione...";
+                // 3. Popup di Conferma (Simulazione Pagamento)
+                if(confirm(`Vuoi procedere al pagamento di ${price} per scaricare ${itemName}?`)) {
+                    
+                    // A. Simulazione Attesa Pagamento
+                    els.loader.classList.remove('hidden'); 
+                    els.loaderText.innerText = "Reindirizzamento a Stripe in corso...";
+                    
+                    setTimeout(() => {
+                        els.loaderText.innerText = "Pagamento riuscito! Generazione file...";
+                        
+                        // B. Esecuzione Download dopo pagamento OK
+                        setTimeout(() => {
+                            executeDownloadGeneration(type);
+                        }, 1000);
+                        
+                    }, 1500);
 
-                setTimeout(() => {
+                } else {
+                    // Annullato
+                    return;
+                }
+            }
+
+            // Funzione interna che esegue effettivamente la generazione e il download
+            function executeDownloadGeneration(type) {
                     try {
                         const canvas = els.exportCanvas;
                         const ctx = canvas.getContext('2d');
@@ -1731,7 +1702,7 @@
                         canvas.width = targetW;
                         canvas.height = targetH;
                         
-                        // --- DRAWING FUNCTION ---
+                        // --- DRAWING LOGIC ---
                         const performDraw = (bgImg) => {
                             // 1. Draw Background/Structure
                             if (type === 'kindle') {
@@ -1904,7 +1875,6 @@
                         alert("Errore durante l'esportazione: " + e.message);
                         els.loader.classList.add('hidden');
                     }
-                }, 100);
             }
             
             // FIXED EVENT LISTENERS FOR TOGGLES
@@ -2012,7 +1982,8 @@
             els.clearStyleRef.addEventListener('click', () => { state.styleReferenceB64 = null; els.styleRefInput.value = ''; els.styleRefPreview.classList.add('hidden'); els.clearStyleRef.classList.add('hidden'); });
 
             els.resetBtn.addEventListener('click', performReset);
-            els.buyCreditsBtn.addEventListener('click', handleStripeCheckout);
+            
+            // --- REMOVED BUY CREDITS BUTTON LISTENER AS IT NO LONGER EXISTS ---
 
             els.addRectBtn.addEventListener('click', () => addElement('shape', 'rect'));
             els.addCircleBtn.addEventListener('click', () => addElement('shape', 'circle'));

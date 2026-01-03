@@ -238,6 +238,7 @@
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
             </div>
             <div class="flex items-center gap-4">
+                
                 <div class="text-xs font-mono text-gray-400 bg-gray-700 px-3 py-1 rounded-full">
                     <i class="fa-solid fa-pen-ruler mr-2"></i>Design Mode
                 </div>
@@ -483,9 +484,6 @@
                     <i class="fa-solid fa-file-export text-green-500"></i> 
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600">3. Esporta</span>
                 </h2>
-                <button onclick="performReset()" class="w-full mb-4 bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded shadow-lg transition-colors flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-trash"></i> RESETTA TUTTO
-                </button>
                 <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 transform hover:scale-105">
                     <i class="fa-brands fa-amazon"></i> Scarica Cover Kindle HD
                 </button>
@@ -678,7 +676,7 @@
                 elements: [], 
                 selectedElementId: null, 
                 idCounter: 0, 
-                canvasScale: 1,
+                canvasScale: 1, 
                 paperbackLayout: null,
                 pickingColor: null,
                 isSelectingArea: false,

@@ -46,17 +46,16 @@
             transition: all 0.3s ease;
             background-color: #1a202c;
             
-            /* FORZA RIEMPIMENTO COVER - SENZA !important per Paperback compatibility */
+            /* Background settings per gestire sia Kindle che Paperback correttamente */
             background-size: cover; 
             background-position: center;
             background-repeat: no-repeat;
             
             margin: 0 auto;
-            border-radius: 8px; /* Arrotondamento canvas interno */
+            border-radius: 4px; 
             
-            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore */
-            max-width: 100%;
-            max-height: 100%;
+            /* Assicura che il canvas non collassi ma si adatti al contenuto */
+            flex-shrink: 0; 
         }
         
         .draggable-item {
@@ -265,8 +264,8 @@
     <div class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6">
         <div class="max-w-[1800px] w-full grid grid-cols-1 lg:grid-cols-12 gap-8 h-[85vh]">
             
-            <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20">
-                <div id="settingsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-36">
+            <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20 min-h-0">
+                <div id="settingsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-24">
                 
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10">
                         <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-fuchsia-300">
@@ -568,7 +567,7 @@
                             <div>
                                 <label class="text-[10px] text-gray-400 uppercase font-bold mb-1 block">Colore Retro</label>
                                 <div class="flex gap-2 items-center p-1 bg-gray-900/50 rounded-xl border border-white/10">
-                                    <input type="color" id="backColorInput" class="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 bg-transparent" value="#1a202c">
+                                    <input type="color" id="backColorInput" class="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 bg-transparent" value="#020617">
                                 </div>
                             </div>
                         </div>
@@ -916,7 +915,7 @@
                  // 6. Reset Bottone Selezione
                  if(els.toggleSelectModeBtn) {
                     els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                    els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
                  }
                  
                  // FIX SCROLL RESET
@@ -1007,7 +1006,7 @@
                 els.selectionBox.style.display = 'none';
                 els.selectionControls.classList.add('hidden');
                 els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
 
                 els.interactiveArea.style.width = '400px';
                 els.interactiveArea.style.height = '517.65px'; 
@@ -1043,7 +1042,7 @@
                 els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
                 els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
 
                 const calc = updatePrintCalculations();
                 const ratio = calc.pxW / calc.pxH;

@@ -52,7 +52,7 @@
             margin: 0 auto;
             border-radius: 8px; /* Arrotondamento canvas interno */
             
-            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore */
+            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore se troppo grande */
             max-width: 100%;
             max-height: 100%;
         }
@@ -71,7 +71,6 @@
             white-space: nowrap;
             transform-origin: center center;
             z-index: 200; 
-            /* FIX: Line-height tight to ensure centering is visually accurate */
             line-height: 1.1; 
         }
         
@@ -140,8 +139,8 @@
             transition: transform 0.2s ease-in-out;
         }
 
-        /* Scrollbar Personalizzata per la colonna impostazioni */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; } /* Più sottile */
+        /* Scrollbar Personalizzata */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
@@ -156,19 +155,18 @@
             display: none;
         }
 
-        /* Barcode Area Marker - Z-INDEX ALTO PER VISIBILITA' */
+        /* Barcode Area Marker */
         #barcodeArea {
             position: absolute;
             width: 90px; 
             height: 55px;
             background-color: #ffffff;
-            /* display controlled by JS class */
             align-items: center;
             justify-content: center;
-            z-index: 1000; /* ALTO */
+            z-index: 1000; 
             pointer-events: auto; 
             box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            border: 4px solid white; /* Quiet zone */
+            border: 4px solid white;
             flex-direction: column;
         }
         
@@ -176,14 +174,7 @@
         #barcodeLines {
             width: 100%;
             height: 80%;
-            background-image: repeating-linear-gradient(90deg, 
-                #000 0px, #000 2px, 
-                #fff 2px, #fff 3px, 
-                #000 3px, #000 5px, 
-                #fff 5px, #fff 6px,
-                #000 6px, #000 9px,
-                #fff 9px, #fff 11px
-            );
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px);
         }
         #barcodeText {
             width: 100%;
@@ -197,41 +188,12 @@
             font-weight: bold;
         }
 
-        /* Guides Overlay Styles - Z-INDEX ALTO */
-        #guidesOverlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 990; /* Sotto Barcode ma sopra tutto il resto */
-            /* display controlled by JS */
-        }
-        .kdp-bleed-zone {
-            position: absolute;
-            background-color: rgba(236, 72, 153, 0.3); /* PINK FOR BLEED area to cut */
-            z-index: 991;
-        }
-        /* Safe zone is the critical text area */
-        .kdp-safe-zone {
-            position: absolute;
-            border: 1px dashed #ef4444; /* RED DASHED - Danger Line */
-            z-index: 992;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-        }
-        .kdp-spine-fold {
-            position: absolute;
-            border-left: 1px dashed #ef4444; 
-            border-right: 1px dashed #ef4444;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.1); 
-            z-index: 991;
-        }
-        /* The actual TRIM line where the book is cut */
-        .kdp-trim-line {
-            position: absolute;
-            border: 1px dashed #000; /* BLACK DASHED - Cut Line */
-            pointer-events: none;
-            z-index: 993;
-        }
+        /* Guides Overlay Styles */
+        #guidesOverlay { position: absolute; inset: 0; pointer-events: none; z-index: 990; }
+        .kdp-bleed-zone { position: absolute; background-color: rgba(236, 72, 153, 0.3); z-index: 991; }
+        .kdp-safe-zone { position: absolute; border: 1px dashed #ef4444; z-index: 992; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .kdp-spine-fold { position: absolute; border-left: 1px dashed #ef4444; border-right: 1px dashed #ef4444; height: 100%; background-color: rgba(0, 0, 0, 0.1); z-index: 991; }
+        .kdp-trim-line { position: absolute; border: 1px dashed #000; pointer-events: none; z-index: 993; }
 
         /* Stile per le card professionali */
         .pro-card-bg {
@@ -292,8 +254,33 @@
                                     <option value="narrative">Narrativa</option>
                                 </select>
                             </div>
+
+                            <div class="mt-4">
+                                <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider flex items-center gap-2 mb-2">
+                                    <i class="fa-solid fa-image text-fuchsia-300"></i> Immagine di Referenza (Opzionale)
+                                </label>
+                                
+                                <div class="space-y-2">
+                                    <label class="cursor-pointer w-full bg-purple-200/80 hover:bg-purple-100/80 text-purple-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold border border-purple-300/50">
+                                        <i class="fa-solid fa-upload"></i> Carica Immagine
+                                        <input type="file" id="styleRefInput" accept="image/*" class="hidden">
+                                    </label>
+
+                                    <div id="styleRefPreview" class="hidden w-full bg-black/30 p-2 rounded-lg border border-purple-500/30 flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-gray-900 rounded-md overflow-hidden flex-shrink-0 border border-white/20">
+                                                <img id="styleRefImg" class="w-full h-full object-cover">
+                                            </div>
+                                            <span class="text-[10px] text-purple-200">Immagine caricata</span>
+                                        </div>
+                                        <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-xs px-2 py-1 hover:bg-white/5 rounded transition-colors">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             
-                            <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-fuchsia-900/30 mt-2 transition-all duration-200 transform hover:scale-[1.02] flex justify-center items-center gap-2 border border-fuchsia-500/30">
+                            <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-fuchsia-900/30 mt-6 transition-all duration-200 transform hover:scale-[1.02] flex justify-center items-center gap-2 border border-fuchsia-500/30">
                                 <i class="fa-solid fa-wand-magic-sparkles text-lg"></i> GENERA
                             </button>
                             
@@ -327,32 +314,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="mt-4 pt-3 border-t border-white/10">
-                                    <label class="text-xs text-purple-300 uppercase font-bold mb-2 flex items-center gap-2">
-                                        <i class="fa-solid fa-image"></i> Immagine di Referenza
-                                    </label>
-                                    
-                                    <div class="space-y-2">
-                                        <label class="cursor-pointer w-full bg-purple-200/80 hover:bg-purple-100/80 text-purple-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold border border-purple-300/50">
-                                            <i class="fa-solid fa-upload"></i> Carica Immagine
-                                            <input type="file" id="styleRefInput" accept="image/*" class="hidden">
-                                        </label>
-
-                                        <div id="styleRefPreview" class="hidden w-full bg-black/30 p-2 rounded-lg border border-purple-500/30 flex items-center justify-between gap-2">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-8 h-8 bg-gray-900 rounded-md overflow-hidden flex-shrink-0 border border-white/20">
-                                                    <img id="styleRefImg" class="w-full h-full object-cover">
-                                                </div>
-                                                <span class="text-[10px] text-purple-200">Immagine caricata</span>
-                                            </div>
-                                            <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-xs px-2 py-1 hover:bg-white/5 rounded transition-colors">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
                             </div>
                         </div>
                     </div>
@@ -546,7 +507,7 @@
                               <p class="text-[9px] text-gray-500 mt-1">*Determina lo spessore esatto del dorso.</p>
                         </div>
                         
-                        <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 text-sm mb-4 transition-all duration-200 transform hover:scale-[1.02] border border-orange-500/30">
+                        <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-yellow-700 to-yellow-500 hover:from-yellow-600 hover:to-yellow-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-yellow-900/20 flex items-center justify-center gap-2 text-sm mb-4 transition-all duration-200 transform hover:scale-[1.02] border border-yellow-600/30">
                             <i class="fa-solid fa-pen-ruler text-lg"></i> Crea Layout KDP
                         </button>
 

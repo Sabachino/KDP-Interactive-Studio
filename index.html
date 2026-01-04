@@ -51,6 +51,10 @@
             background-repeat: no-repeat !important;
             margin: 0 auto;
             border-radius: 8px; /* Arrotondamento canvas interno */
+            
+            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore */
+            max-width: 100%;
+            max-height: 100%;
         }
         
         .draggable-item {
@@ -260,12 +264,13 @@
         <div class="max-w-[1800px] w-full grid grid-cols-1 lg:grid-cols-12 gap-8 h-[85vh]">
             
             <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20">
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-40">
                 
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10">
                         <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-fuchsia-300">
                             <i class="fa-solid fa-brain"></i> 
-                            <span>1. Generazione Cover</span> </h2>
+                            <span>1. Generazione Cover</span>
+                        </h2>
                         <div class="space-y-4">
                             <div>
                                 <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Titolo Libro</label>
@@ -299,7 +304,7 @@
                                 <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-yellow-500 outline-none mb-2 resize-none" placeholder="Es. Aggiungi più nebbia..."></textarea>
                                 
                                 <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" id="modifyArtworkBtn" class="w-full bg-purple-600/80 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-all text-xs flex justify-center items-center gap-2 border border-purple-500/30">
+                                    <button type="button" id="modifyArtworkBtn" class="w-full bg-fuchsia-400/80 hover:bg-fuchsia-300 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-all text-xs flex justify-center items-center gap-2 border border-fuchsia-300/30">
                                         <i class="fa-solid fa-wand-sparkles"></i> Applica
                                     </button>
                                     <button type="button" id="undoBtn" class="w-full bg-gray-700/80 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-all text-xs flex justify-center items-center gap-2 border border-white/10">
@@ -309,7 +314,7 @@
 
                                   <div class="mt-4 pt-3 border-t border-white/10">
                                      <label class="text-xs text-pink-300 uppercase font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-eraser"></i> Modifica Selettiva</label>
-                                     <button id="toggleSelectModeBtn" class="w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30">
+                                     <button id="toggleSelectModeBtn" class="w-full bg-fuchsia-400/80 hover:bg-fuchsia-300 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/30">
                                         <i class="fa-regular fa-square"></i> Definisci Area
                                     </button>
                                     
@@ -546,7 +551,7 @@
                         </button>
 
                         <div class="mb-2">
-                            <label class="cursor-pointer w-full bg-orange-600/50 hover:bg-orange-500/50 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-xs transition-all border border-orange-500/30">
+                            <label class="cursor-pointer w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-900 font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-xs transition-all border border-yellow-300">
                                 <i class="fa-solid fa-upload"></i> Importa Fronte (Opz.)
                                 <input type="file" id="importFrontInput" accept="image/*" class="hidden">
                             </label>
@@ -657,28 +662,30 @@
 
             <div class="lg:col-span-9 h-full flex flex-col">
                 <div id="previewContainer" class="pro-card-bg rounded-3xl shadow-2xl shadow-black/30 border border-white/10 h-full flex flex-col items-center justify-center relative overflow-hidden p-8 transition-all">
-                    <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
-                        <div class="banana-loader mb-6"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse text-lg font-bold">la tua cover è in arrivo..........</p>
-                    </div>
-                    <div id="placeholder" class="text-gray-500 text-center flex flex-col items-center">
-                        <div class="bg-white/5 p-8 rounded-full mb-6 border border-white/10 shadow-inner">
-                            <i class="fa-solid fa-palette text-7xl opacity-30 text-yellow-200"></i>
+                    <div class="absolute inset-0 overflow-auto flex items-center justify-center p-4">
+                        <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
+                            <div class="banana-loader mb-6"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse text-lg font-bold">la tua cover è in arrivo..........</p>
                         </div>
-                        <h3 class="text-2xl font-bold text-gray-300 mb-2">Il tuo Studio Creativo</h3>
-                        <p class="text-gray-400">Configura lo stile a sinistra e genera la tua base.</p>
-                    </div>
-                    <div id="interactiveArea" class="hidden shadow-2xl relative bg-black/50 rounded-xl overflow-hidden ring-1 ring-white/10">
-                        <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
-                        <div id="selectionBox" style="display:none;"></div>
-                    </div>
-                    <div id="barcodeArea" class="hidden flex flex-col items-center justify-center rounded-sm overflow-hidden">
-                        <div id="barcodeLines"></div>
-                        <div id="barcodeText">ISBN 978-0-00-000000-0</div>
+                        <div id="placeholder" class="text-gray-500 text-center flex flex-col items-center">
+                            <div class="bg-white/5 p-8 rounded-full mb-6 border border-white/10 shadow-inner">
+                                <i class="fa-solid fa-palette text-7xl opacity-30 text-yellow-200"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-300 mb-2">Il tuo Studio Creativo</h3>
+                            <p class="text-gray-400">Configura lo stile a sinistra e genera la tua base.</p>
+                        </div>
+                        <div id="interactiveArea" class="hidden shadow-2xl relative bg-black/50 rounded-xl overflow-hidden ring-1 ring-white/10">
+                            <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
+                            <div id="selectionBox" style="display:none;"></div>
+                        </div>
+                        <div id="barcodeArea" class="hidden flex flex-col items-center justify-center rounded-sm overflow-hidden">
+                            <div id="barcodeLines"></div>
+                            <div id="barcodeText">ISBN 978-0-00-000000-0</div>
+                        </div>
                     </div>
                     
-                    <div id="canvasDimensionsDisplay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 mt-4 text-xs text-orange-300 font-mono text-center hidden py-1.5 px-4 bg-black/60 backdrop-blur-sm rounded-full border border-orange-500/30 shadow-lg"></div>
+                    <div id="canvasDimensionsDisplay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 mt-4 text-xs text-orange-300 font-mono text-center hidden py-1.5 px-4 bg-black/60 backdrop-blur-sm rounded-full border border-orange-500/30 shadow-lg z-50"></div>
                     
-                    <div id="canvasInfo" class="absolute top-4 left-1/2 transform -translate-x-1/2 hidden mt-2 text-xs text-gray-300 flex items-center gap-2 bg-black/40 backdrop-blur-sm py-1.5 px-4 rounded-full border border-white/10">
+                    <div id="canvasInfo" class="absolute top-4 left-1/2 transform -translate-x-1/2 hidden mt-2 text-xs text-gray-300 flex items-center gap-2 bg-black/40 backdrop-blur-sm py-1.5 px-4 rounded-full border border-white/10 z-50">
                         <i class="fa-solid fa-mouse-pointer text-yellow-400 animate-bounce"></i><span>Trascina gli elementi. Usa il pannello a sinistra per modificare.</span>
                     </div>
                 </div>

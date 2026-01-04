@@ -314,7 +314,7 @@
 
                                   <div class="mt-4 pt-3 border-t border-white/10">
                                      <label class="text-xs text-pink-300 uppercase font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-eraser"></i> Modifica Selettiva</label>
-                                     <button id="toggleSelectModeBtn" class="w-full bg-fuchsia-400/80 hover:bg-fuchsia-300 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/30">
+                                     <button id="toggleSelectModeBtn" class="w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50">
                                         <i class="fa-regular fa-square"></i> Definisci Area
                                     </button>
                                     
@@ -334,7 +334,7 @@
                                     </label>
                                     
                                     <div class="space-y-2">
-                                        <label class="cursor-pointer w-full bg-purple-600/80 hover:bg-purple-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold border border-purple-500/30">
+                                        <label class="cursor-pointer w-full bg-purple-200/80 hover:bg-purple-100/80 text-purple-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold border border-purple-300/50">
                                             <i class="fa-solid fa-upload"></i> Carica Immagine
                                             <input type="file" id="styleRefInput" accept="image/*" class="hidden">
                                         </label>
@@ -600,7 +600,7 @@
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
-                            <button id="centerSpineTextBtn" class="w-full bg-orange-700/30 hover:bg-orange-600/30 text-orange-200 py-2 rounded-xl text-xs border border-orange-500/20 transition-all font-bold">
+                            <button id="centerSpineTextBtn" class="w-full bg-orange-100 hover:bg-orange-200 text-orange-900 py-2 rounded-xl text-xs border border-orange-300 transition-all font-bold">
                                 <i class="fa-solid fa-arrows-left-right-to-line mr-1"></i> Centra nella Spina
                             </button>
                             
@@ -611,7 +611,7 @@
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
-                            <button id="centerBackTextBtn" class="w-full bg-orange-700/30 hover:bg-orange-600/30 text-orange-200 py-2 rounded-xl text-xs border border-orange-500/20 transition-all font-bold">
+                            <button id="centerBackTextBtn" class="w-full bg-orange-100 hover:bg-orange-200 text-orange-900 py-2 rounded-xl text-xs border border-orange-300 transition-all font-bold">
                                 <i class="fa-solid fa-arrows-left-right-to-line mr-1"></i> Centra nel Retro
                             </button>
                         </div>
@@ -619,7 +619,7 @@
                         <div id="paperbackTools" class="hidden space-y-2 pt-4 border-t border-white/10">
                             <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Extra</p>
                             <div class="grid grid-cols-1 gap-2">
-                                <label class="cursor-pointer bg-orange-600/50 hover:bg-orange-500/50 text-white py-2.5 rounded-xl text-xs flex items-center justify-center border border-orange-500/30 transition-all font-bold">
+                                <label class="cursor-pointer bg-orange-100 hover:bg-orange-200 text-orange-900 py-2.5 rounded-xl text-xs flex items-center justify-center border border-orange-300 transition-all font-bold">
                                     <i class="fa-solid fa-image mr-2"></i> Immagine Retro
                                     <input type="file" id="addBackImageInput" accept="image/*" class="hidden">
                                 </label>
@@ -660,7 +660,12 @@
                 </div>
             </div>
 
-            <div class="lg:col-span-9 h-full flex flex-col">
+            <div class="lg:col-span-9 h-full flex flex-col relative">
+                
+                <div id="canvasInfo" class="mx-auto mb-4 text-xs text-gray-300 flex items-center gap-2 bg-black/40 backdrop-blur-sm py-1.5 px-4 rounded-full border border-white/10 z-50 hidden">
+                    <i class="fa-solid fa-mouse-pointer text-yellow-400 animate-bounce"></i><span>Trascina gli elementi. Usa il pannello a sinistra per modificare.</span>
+                </div>
+
                 <div id="previewContainer" class="pro-card-bg rounded-3xl shadow-2xl shadow-black/30 border border-white/10 h-full flex flex-col items-center justify-center relative overflow-hidden p-8 transition-all">
                     <div class="absolute inset-0 overflow-auto flex items-center justify-center p-4">
                         <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
@@ -682,14 +687,10 @@
                             <div id="barcodeText">ISBN 978-0-00-000000-0</div>
                         </div>
                     </div>
-                    
-                    <div id="canvasDimensionsDisplay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 mt-4 text-xs text-orange-300 font-mono text-center hidden py-1.5 px-4 bg-black/60 backdrop-blur-sm rounded-full border border-orange-500/30 shadow-lg z-50"></div>
-                    
-                    <div id="canvasInfo" class="absolute top-4 left-1/2 transform -translate-x-1/2 hidden mt-2 text-xs text-gray-300 flex items-center gap-2 bg-black/40 backdrop-blur-sm py-1.5 px-4 rounded-full border border-white/10 z-50">
-                        <i class="fa-solid fa-mouse-pointer text-yellow-400 animate-bounce"></i><span>Trascina gli elementi. Usa il pannello a sinistra per modificare.</span>
-                    </div>
                 </div>
                 <canvas id="exportCanvas" class="hidden"></canvas>
+
+                 <div id="canvasDimensionsDisplay" class="mx-auto mt-4 text-xs text-orange-300 font-mono text-center hidden py-1.5 px-4 bg-black/60 backdrop-blur-sm rounded-full border border-orange-500/30 shadow-lg z-50"></div>
             </div>
         </div>
     </div>
@@ -914,7 +915,7 @@
                  // 6. Reset Bottone Selezione
                  if(els.toggleSelectModeBtn) {
                     els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                    els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
                  }
             }
 
@@ -1001,7 +1002,7 @@
                 els.selectionBox.style.display = 'none';
                 els.selectionControls.classList.add('hidden');
                 els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
 
                 els.interactiveArea.style.width = '400px';
                 els.interactiveArea.style.height = '517.65px'; 
@@ -1037,7 +1038,7 @@
                 els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
                 els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
+                els.toggleSelectModeBtn.className = 'w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50';
 
                 const calc = updatePrintCalculations();
                 const ratio = calc.pxW / calc.pxH;

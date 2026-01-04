@@ -46,7 +46,7 @@
             transition: all 0.3s ease;
             background-color: #1a202c;
             
-            /* Background settings per gestire sia Kindle che Paperback correttamente */
+            /* Background settings */
             background-size: cover; 
             background-position: center;
             background-repeat: no-repeat;
@@ -54,8 +54,10 @@
             margin: 0 auto;
             border-radius: 4px; 
             
-            /* Assicura che il canvas non collassi ma si adatti al contenuto */
-            flex-shrink: 0; 
+            /* FIX CRITICO: Impedisce al canvas di espandersi oltre il contenitore flex */
+            flex-shrink: 0;
+            max-width: 100%;
+            max-height: 100%;
         }
         
         .draggable-item {
@@ -72,7 +74,6 @@
             white-space: nowrap;
             transform-origin: center center;
             z-index: 200; 
-            /* FIX: Line-height tight to ensure centering is visually accurate */
             line-height: 1.1; 
         }
         
@@ -141,8 +142,8 @@
             transition: transform 0.2s ease-in-out;
         }
 
-        /* Scrollbar Personalizzata per la colonna impostazioni */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; } /* Più sottile */
+        /* Scrollbar Personalizzata */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; } 
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
@@ -157,19 +158,18 @@
             display: none;
         }
 
-        /* Barcode Area Marker - Z-INDEX ALTO PER VISIBILITA' */
+        /* Barcode Area Marker */
         #barcodeArea {
             position: absolute;
             width: 90px; 
             height: 55px;
             background-color: #ffffff;
-            /* display controlled by JS class */
             align-items: center;
             justify-content: center;
-            z-index: 1000; /* ALTO */
+            z-index: 1000; 
             pointer-events: auto; 
             box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            border: 4px solid white; /* Quiet zone */
+            border: 4px solid white;
             flex-direction: column;
         }
         
@@ -177,14 +177,7 @@
         #barcodeLines {
             width: 100%;
             height: 80%;
-            background-image: repeating-linear-gradient(90deg, 
-                #000 0px, #000 2px, 
-                #fff 2px, #fff 3px, 
-                #000 3px, #000 5px, 
-                #fff 5px, #fff 6px,
-                #000 6px, #000 9px,
-                #fff 9px, #fff 11px
-            );
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px);
         }
         #barcodeText {
             width: 100%;
@@ -198,47 +191,18 @@
             font-weight: bold;
         }
 
-        /* Guides Overlay Styles - Z-INDEX ALTO */
-        #guidesOverlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 990; /* Sotto Barcode ma sopra tutto il resto */
-            /* display controlled by JS */
-        }
-        .kdp-bleed-zone {
-            position: absolute;
-            background-color: rgba(236, 72, 153, 0.3); /* PINK FOR BLEED area to cut */
-            z-index: 991;
-        }
-        /* Safe zone is the critical text area */
-        .kdp-safe-zone {
-            position: absolute;
-            border: 1px dashed #ef4444; /* RED DASHED - Danger Line */
-            z-index: 992;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-        }
-        .kdp-spine-fold {
-            position: absolute;
-            border-left: 1px dashed #ef4444; 
-            border-right: 1px dashed #ef4444;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.1); 
-            z-index: 991;
-        }
-        /* The actual TRIM line where the book is cut */
-        .kdp-trim-line {
-            position: absolute;
-            border: 1px dashed #000; /* BLACK DASHED - Cut Line */
-            pointer-events: none;
-            z-index: 993;
-        }
+        /* Guides Overlay Styles */
+        #guidesOverlay { position: absolute; inset: 0; pointer-events: none; z-index: 990; }
+        .kdp-bleed-zone { position: absolute; background-color: rgba(236, 72, 153, 0.3); z-index: 991; }
+        .kdp-safe-zone { position: absolute; border: 1px dashed #ef4444; z-index: 992; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .kdp-spine-fold { position: absolute; border-left: 1px dashed #ef4444; border-right: 1px dashed #ef4444; height: 100%; background-color: rgba(0, 0, 0, 0.1); z-index: 991; }
+        .kdp-trim-line { position: absolute; border: 1px dashed #000; pointer-events: none; z-index: 993; }
 
         /* Stile per le card professionali */
         .pro-card-bg {
-            background-color: rgba(30, 41, 59, 0.7); /* Slate-800 molto trasparente */
-            backdrop-filter: blur(16px); /* Effetto vetro */
-            border: 1px solid rgba(255, 255, 255, 0.08); /* Bordo sottilissimo */
+            background-color: rgba(30, 41, 59, 0.7); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
         }
     </style>
 </head>
@@ -264,7 +228,7 @@
     <div class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6">
         <div class="max-w-[1800px] w-full grid grid-cols-1 lg:grid-cols-12 gap-8 h-[85vh]">
             
-            <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20 min-h-0">
+            <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20">
                 <div id="settingsPanel" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-24">
                 
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10">
@@ -667,26 +631,26 @@
                 </div>
 
                 <div id="previewContainer" class="pro-card-bg rounded-3xl shadow-2xl shadow-black/30 border border-white/10 h-full flex flex-col items-center justify-center relative overflow-hidden p-8 transition-all">
-                    <div class="absolute inset-0 overflow-auto flex items-center justify-center p-4">
-                        <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
-                            <div class="banana-loader mb-6"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse text-lg font-bold">la tua cover è in arrivo..........</p>
-                        </div>
-                        <div id="placeholder" class="text-gray-500 text-center flex flex-col items-center">
-                            <div class="bg-white/5 p-8 rounded-full mb-6 border border-white/10 shadow-inner">
-                                <i class="fa-solid fa-palette text-7xl opacity-30 text-yellow-200"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold text-gray-300 mb-2">Il tuo Studio Creativo</h3>
-                            <p class="text-gray-400">Configura lo stile a sinistra e genera la tua base.</p>
-                        </div>
-                        <div id="interactiveArea" class="hidden shadow-2xl relative bg-black/50 rounded-xl overflow-hidden ring-1 ring-white/10">
-                            <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
-                            <div id="selectionBox" style="display:none;"></div>
-                        </div>
-                        <div id="barcodeArea" class="hidden flex flex-col items-center justify-center rounded-sm overflow-hidden">
-                            <div id="barcodeLines"></div>
-                            <div id="barcodeText">ISBN 978-0-00-000000-0</div>
-                        </div>
+                    
+                    <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
+                        <div class="banana-loader mb-6"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse text-lg font-bold">la tua cover è in arrivo..........</p>
                     </div>
+                    <div id="placeholder" class="text-gray-500 text-center flex flex-col items-center">
+                        <div class="bg-white/5 p-8 rounded-full mb-6 border border-white/10 shadow-inner">
+                            <i class="fa-solid fa-palette text-7xl opacity-30 text-yellow-200"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-300 mb-2">Il tuo Studio Creativo</h3>
+                        <p class="text-gray-400">Configura lo stile a sinistra e genera la tua base.</p>
+                    </div>
+                    <div id="interactiveArea" class="hidden shadow-2xl relative bg-black/50 rounded-xl overflow-hidden ring-1 ring-white/10">
+                        <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
+                        <div id="selectionBox" style="display:none;"></div>
+                    </div>
+                    <div id="barcodeArea" class="hidden flex flex-col items-center justify-center rounded-sm overflow-hidden">
+                        <div id="barcodeLines"></div>
+                        <div id="barcodeText">ISBN 978-0-00-000000-0</div>
+                    </div>
+                
                 </div>
                 <canvas id="exportCanvas" class="hidden"></canvas>
 
@@ -717,7 +681,7 @@
                 idCounter: 0, 
                 canvasScale: 1, 
                 paperbackLayout: null,
-                pickingColor: null,
+                pickingColor: null, 
                 isSelectingArea: false,
                 selectionStart: { x: 0, y: 0 },
                 selectionRect: null,

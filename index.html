@@ -45,16 +45,14 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.6); /* Ombra più profonda */
             transition: all 0.3s ease;
             background-color: #1a202c;
-            
-            /* MODIFICA FONDAMENTALE: Rimosso !important per permettere al JS di gestire il Paperback */
-            background-size: cover; 
-            background-position: center;
-            background-repeat: no-repeat;
-            
+            /* FORZA RIEMPIMENTO COVER */
+            background-size: cover !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
             margin: 0 auto;
             border-radius: 8px; /* Arrotondamento canvas interno */
             
-            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore */
+            /* FIX VISUALIZZAZIONE: Assicura che non esca dal contenitore se troppo grande */
             max-width: 100%;
             max-height: 100%;
         }
@@ -73,7 +71,6 @@
             white-space: nowrap;
             transform-origin: center center;
             z-index: 200; 
-            /* FIX: Line-height tight to ensure centering is visually accurate */
             line-height: 1.1; 
         }
         
@@ -142,8 +139,8 @@
             transition: transform 0.2s ease-in-out;
         }
 
-        /* Scrollbar Personalizzata per la colonna impostazioni */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; } /* Più sottile */
+        /* Scrollbar Personalizzata */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
@@ -158,19 +155,18 @@
             display: none;
         }
 
-        /* Barcode Area Marker - Z-INDEX ALTO PER VISIBILITA' */
+        /* Barcode Area Marker */
         #barcodeArea {
             position: absolute;
             width: 90px; 
             height: 55px;
             background-color: #ffffff;
-            /* display controlled by JS class */
             align-items: center;
             justify-content: center;
-            z-index: 1000; /* ALTO */
+            z-index: 1000; 
             pointer-events: auto; 
             box-shadow: 0 0 5px rgba(0,0,0,0.3);
-            border: 4px solid white; /* Quiet zone */
+            border: 4px solid white;
             flex-direction: column;
         }
         
@@ -178,14 +174,7 @@
         #barcodeLines {
             width: 100%;
             height: 80%;
-            background-image: repeating-linear-gradient(90deg, 
-                #000 0px, #000 2px, 
-                #fff 2px, #fff 3px, 
-                #000 3px, #000 5px, 
-                #fff 5px, #fff 6px,
-                #000 6px, #000 9px,
-                #fff 9px, #fff 11px
-            );
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px);
         }
         #barcodeText {
             width: 100%;
@@ -199,41 +188,12 @@
             font-weight: bold;
         }
 
-        /* Guides Overlay Styles - Z-INDEX ALTO */
-        #guidesOverlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 990; /* Sotto Barcode ma sopra tutto il resto */
-            /* display controlled by JS */
-        }
-        .kdp-bleed-zone {
-            position: absolute;
-            background-color: rgba(236, 72, 153, 0.3); /* PINK FOR BLEED area to cut */
-            z-index: 991;
-        }
-        /* Safe zone is the critical text area */
-        .kdp-safe-zone {
-            position: absolute;
-            border: 1px dashed #ef4444; /* RED DASHED - Danger Line */
-            z-index: 992;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
-        }
-        .kdp-spine-fold {
-            position: absolute;
-            border-left: 1px dashed #ef4444; 
-            border-right: 1px dashed #ef4444;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.1); 
-            z-index: 991;
-        }
-        /* The actual TRIM line where the book is cut */
-        .kdp-trim-line {
-            position: absolute;
-            border: 1px dashed #000; /* BLACK DASHED - Cut Line */
-            pointer-events: none;
-            z-index: 993;
-        }
+        /* Guides Overlay Styles */
+        #guidesOverlay { position: absolute; inset: 0; pointer-events: none; z-index: 990; }
+        .kdp-bleed-zone { position: absolute; background-color: rgba(236, 72, 153, 0.3); z-index: 991; }
+        .kdp-safe-zone { position: absolute; border: 1px dashed #ef4444; z-index: 992; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+        .kdp-spine-fold { position: absolute; border-left: 1px dashed #ef4444; border-right: 1px dashed #ef4444; height: 100%; background-color: rgba(0, 0, 0, 0.1); z-index: 991; }
+        .kdp-trim-line { position: absolute; border: 1px dashed #000; pointer-events: none; z-index: 993; }
 
         /* Stile per le card professionali */
         .pro-card-bg {
@@ -266,7 +226,7 @@
         <div class="max-w-[1800px] w-full grid grid-cols-1 lg:grid-cols-12 gap-8 h-[85vh]">
             
             <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20">
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-80">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6 pb-40">
                 
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10">
                         <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-fuchsia-300">
@@ -301,7 +261,7 @@
                                 </label>
                                 
                                 <div class="space-y-2">
-                                    <label class="cursor-pointer w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-200 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold border border-purple-500/30">
+                                    <label class="cursor-pointer w-full bg-purple-200/80 hover:bg-purple-100/80 text-purple-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold border border-purple-300/50">
                                         <i class="fa-solid fa-upload"></i> Carica Immagine
                                         <input type="file" id="styleRefInput" accept="image/*" class="hidden">
                                     </label>
@@ -341,7 +301,7 @@
 
                                   <div class="mt-4 pt-3 border-t border-white/10">
                                      <label class="text-xs text-pink-300 uppercase font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-eraser"></i> Modifica Selettiva</label>
-                                     <button id="toggleSelectModeBtn" class="w-full bg-pink-500/20 hover:bg-pink-500/30 text-pink-200 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30">
+                                     <button id="toggleSelectModeBtn" class="w-full bg-fuchsia-200/80 hover:bg-fuchsia-100/80 text-fuchsia-900 text-xs py-2.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-fuchsia-300/50">
                                         <i class="fa-regular fa-square"></i> Definisci Area
                                     </button>
                                     
@@ -620,7 +580,7 @@
                         <div id="paperbackTools" class="hidden space-y-2 pt-4 border-t border-white/10">
                             <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Extra</p>
                             <div class="grid grid-cols-1 gap-2">
-                                <label class="cursor-pointer bg-gradient-to-r from-orange-700 to-orange-600 hover:from-orange-600 hover:to-orange-500 text-white py-2.5 rounded-xl text-xs flex items-center justify-center border border-orange-500/30 transition-all font-bold shadow-md">
+                                <label class="cursor-pointer bg-orange-100 hover:bg-orange-200 text-orange-900 py-2.5 rounded-xl text-xs flex items-center justify-center border border-orange-300 transition-all font-bold">
                                     <i class="fa-solid fa-image mr-2"></i> Immagine Retro
                                     <input type="file" id="addBackImageInput" accept="image/*" class="hidden">
                                 </label>

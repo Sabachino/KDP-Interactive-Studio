@@ -2,696 +2,750 @@
 <html lang="it">
 <head>
     <script src="https://js.stripe.com/v3/"></script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KDP Cover Designer Pro - Interactive Studio</title>
+    <title>KDP Cover Designer Pro - Full Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Merriweather&family=Montserrat:wght@400;700;900&family=Oswald&family=Playfair+Display:wght@400;700;900&family=Roboto&family=Roboto+Condensed&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; background-color: #111827; }
         
+        /* LOADER */
         .banana-loader {
-            width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #FFD700;
+            width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #F59E0B;
             border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite;
         }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* UI Elements */
-        optgroup { color: #F59E0B; font-weight: 700; background-color: #111827; }
-        option { color: white; background-color: #1F2937; font-weight: normal; }
 
-        .text-shadow-black { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
-        .text-shadow-strong { text-shadow: 2px 2px 4px #000000, 0 0 4px #000000; }
+        /* UI SCROLLBAR */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1F2937; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
 
-        /* INTERACTIVE CANVAS STYLES */
+        /* CANVAS CONTAINER & SCALING */
+        #workspace-viewport {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1f2937; /* Dark Gray bg behind canvas */
+            background-image: radial-gradient(#374151 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        #scaler-container {
+            transform-origin: center center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease-out; /* Smooth Zoom */
+        }
+
         #interactiveArea {
             position: relative;
             overflow: hidden;
+            background-color: #fff;
             user-select: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-            background-color: #1a202c;
-            background-size: cover !important;
-            background-position: center !important;
-            background-repeat: no-repeat !important;
-            margin: 0 auto; /* Centering */
-            flex-shrink: 0; /* Prevent shrinking in flex container */
+            /* L'immagine di sfondo sarà gestita via JS */
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover; 
         }
-        
+
+        /* DRAGGABLE ELEMENTS */
         .draggable-item {
-            position: absolute; cursor: move; border: none !important; outline: none !important;
-            background: transparent; box-shadow: none !important; padding: 4px;
-            min-width: 20px; min-height: 1.2em; display: inline-block; white-space: nowrap;
-            transform-origin: center center; z-index: 200; line-height: 1.1; 
+            position: absolute;
+            cursor: grab;
+            border: 1px solid transparent; 
+            white-space: nowrap;
+            z-index: 100;
+            line-height: 1.2;
+            transform-origin: center center;
         }
-        .draggable-item:empty { width: 50px; height: 30px; display: inline-block; }
-        .draggable-item:hover, .draggable-item.selected, .draggable-item:focus { 
-            border: 1px dashed rgba(255, 255, 255, 0.5) !important; outline: none !important;
+        .draggable-item:hover { border: 1px dashed rgba(255, 255, 255, 0.5); }
+        .draggable-item.selected { 
+            border: 1px dashed #F59E0B !important; 
+            cursor: grabbing;
+            z-index: 1000; /* Bring to front */
         }
-        
-        .cursor-crosshair { cursor: crosshair !important; }
-        input[type=range] { -webkit-appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #F59E0B; cursor: pointer; margin-top: -6px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4B5563; border-radius: 2px; }
-        
-        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .style-btn.active { background-color: #F59E0B; color: #111827; border-color: #F59E0B; }
-        
-        /* Checkbox & Scrollbar styles omitted for brevity but preserved in logic */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-
-        #selectionBox { position: absolute; border: 2px dashed #ef4444; background-color: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; display: none; }
+        /* LAYERS (Barcode, Guides) */
+        #guidesOverlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 900;
+            display: none; /* Hidden by default */
+        }
+        .guide-line { position: absolute; border: 1px dashed #ef4444; opacity: 0.8; }
+        .guide-label { 
+            position: absolute; font-size: 10px; color: #ef4444; font-weight: bold; 
+            background: rgba(0,0,0,0.7); padding: 2px 4px; pointer-events: none;
+        }
+        .safe-zone-box {
+            position: absolute; border: 1px dashed #3b82f6; opacity: 0.5; pointer-events: none;
+        }
 
         #barcodeArea {
-            position: absolute; width: 90px; height: 55px; background-color: #ffffff;
-            align-items: center; justify-content: center; z-index: 1000; pointer-events: auto; 
-            box-shadow: 0 0 5px rgba(0,0,0,0.3); border: 4px solid white; flex-direction: column;
+            position: absolute;
+            width: 280px; height: 160px; /* High Res dimensions relative to canvas */
+            background-color: #ffffff;
+            display: none; /* Hidden by default */
+            z-index: 800;
+            border: 4px solid white;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
         }
         #barcodeLines {
-            width: 100%; height: 80%;
-            background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px);
+            width: 90%; height: 70%;
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 4px, #fff 4px, #fff 8px);
         }
-        #barcodeText { width: 100%; text-align: center; font-family: 'Courier New', monospace; font-size: 8px; color: black; height: 20%; line-height: 10px; background: white; font-weight: bold; }
+        #barcodeText {
+            font-family: 'Courier New', monospace; font-weight: bold; font-size: 24px; color: black; margin-top: 5px;
+        }
 
-        #guidesOverlay { position: absolute; inset: 0; pointer-events: none; z-index: 990; }
-        .kdp-bleed-zone { position: absolute; background-color: rgba(236, 72, 153, 0.3); z-index: 991; }
-        .kdp-safe-zone { position: absolute; border: 1px dashed #ef4444; z-index: 992; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
-        .kdp-spine-fold { position: absolute; border-left: 1px dashed #ef4444; border-right: 1px dashed #ef4444; height: 100%; background-color: rgba(0, 0, 0, 0.1); z-index: 991; }
-        .kdp-trim-line { position: absolute; border: 1px dashed #000; pointer-events: none; z-index: 993; }
+        /* UTILS */
+        .text-shadow-strong { text-shadow: 2px 2px 4px #000; }
+        input[type=range] { accent-color: #F59E0B; cursor: pointer; }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900">
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-lg">
-        <div class="w-full px-6 flex justify-between items-center">
+    <nav class="bg-gray-800 border-b border-gray-700 h-16 flex-none z-50 shadow-lg">
+        <div class="w-full h-full px-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-layer-group text-yellow-400 text-2xl"></i>
-                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
+                <i class="fa-solid fa-book-open text-yellow-500 text-2xl"></i>
+                <h1 class="text-xl font-bold text-white tracking-wide">KDP PRO <span class="text-yellow-500">STUDIO</span></h1>
             </div>
+            
+            <div id="topInfoBar" class="hidden flex items-center gap-4 bg-gray-900 px-4 py-1.5 rounded-full border border-gray-600">
+                <span id="canvasDimensionsDisplay" class="text-xs text-orange-400 font-mono font-bold uppercase tracking-wider"></span>
+                <span class="text-gray-600">|</span>
+                <span class="text-xs text-gray-300 flex items-center gap-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i> Trascina elementi</span>
+            </div>
+
             <div class="flex items-center gap-4">
-                <div class="text-xs font-mono text-gray-400 bg-gray-700 px-3 py-1 rounded-full">
-                    <i class="fa-solid fa-pen-ruler mr-2"></i>Design Mode
-                </div>
-                <button id="resetBtn" type="button" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer" title="Resetta tutto">
-                    <i class="fa-solid fa-rotate-right"></i> Reset
+                <button id="resetBtn" class="bg-red-600 hover:bg-red-500 text-white px-4 py-1.5 rounded text-xs font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-trash-can"></i> Reset
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="w-full h-[calc(100vh-5rem)] p-4 grid grid-cols-1 lg:grid-cols-12 gap-6 relative items-start">
+    <div class="flex flex-1 overflow-hidden relative">
         
-        <div class="lg:col-span-3 space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar pr-2 pb-20">
-            <div class="bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300">
-                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-brain text-fuchsia-300"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione</span>
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-xs text-gray-200 uppercase font-bold">Titolo Libro</label>
-                        <input type="text" id="titleInput" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none font-bold" placeholder="Es. Le Avventure di Pinocchio">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-200 uppercase font-bold">Tema della Copertina</label>
-                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto..."></textarea>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-200 uppercase font-bold">Genere (Stile Artistico)</label>
-                        <select id="styleGenre" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none">
-                            <option value="none">Nessuno (usa solo il tema)</option>
-                            <option value="fantasy">Fantasy / Epico</option>
-                            <option value="realistic">Realistico (Fotografico 8K)</option>
-                            <option value="vintage">Vintage (Retrò)</option>
-                            <option value="cinematic">Cinematico</option>
-                        </select>
-                    </div>
-                    <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg mt-2 transition-all duration-200 transform hover:scale-105 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Genera
-                    </button>
-                    
-                    <div id="modificationArea" class="hidden mt-4 pt-4 border-t border-gray-700 animate-fade-in bg-gray-900 rounded p-2">
-                        <div class="mt-4 pt-2 border-t border-gray-700">
-                             <label class="text-xs text-yellow-100 uppercase font-bold mb-2 block flex items-center gap-1"><i class="fa-solid fa-eraser"></i> Modifica Selettiva</label>
-                             <button id="toggleSelectModeBtn" class="w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2">
-                                <i class="fa-regular fa-square"></i> Definisci Area
-                            </button>
-                            <div id="selectionControls" class="hidden space-y-2 animate-fade-in">
-                                <textarea id="selectivePrompt" rows="2" class="w-full bg-gray-800 border border-red-500/50 rounded-lg p-2 text-sm text-white" placeholder="Es. Rimuovi..."></textarea>
-                                <div class="flex gap-2">
-                                    <button id="applySelectiveBtn" class="flex-1 bg-red-600 text-white py-1.5 rounded text-xs font-bold">Esegui</button>
-                                    <button id="cancelSelectBtn" class="flex-1 bg-gray-600 text-white py-1.5 rounded text-xs">Annulla</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="designStudio" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-yellow-500 space-y-4">
-                <h2 class="text-lg font-semibold text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-font"></i> 2. Personalizzazione</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="addGenericTextBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg font-bold text-white border border-gray-500 shadow-md transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-font text-yellow-400"></i> Testo
-                    </button>
-                    <div class="flex gap-1">
-                         <button id="addRectBtn" class="flex-1 bg-gray-700 text-white rounded-lg border border-gray-500 shadow-md"><i class="fa-regular fa-square text-orange-400"></i></button>
-                         <button id="addCircleBtn" class="flex-1 bg-gray-700 text-white rounded-lg border border-gray-500 shadow-md"><i class="fa-regular fa-circle text-orange-400"></i></button>
-                    </div>
-                </div>
-                <button id="deleteElementBtn" class="w-full mt-4 bg-red-900/50 hover:bg-red-900 text-red-200 text-xs py-2 rounded border border-red-800 transition-colors hidden"><i class="fa-solid fa-trash"></i> Elimina Elemento</button>
-                
-                <div id="textInspector" class="hidden space-y-4 animate-fade-in bg-gray-900/50 p-4 rounded-lg border border-gray-600">
-                    <div class="mb-3">
-                        <label class="text-[10px] text-gray-200 uppercase font-bold">Contenuto</label>
-                        <input type="text" id="selectedTextInput" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white">
-                    </div>
-                    <div id="textSpecificControls" class="hidden">
-                         <div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Colore</label><input type="color" id="colorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#ffffff"></div>
-                         <div id="textSizeControl" class="mb-3"><label class="text-[10px] text-gray-200 uppercase font-bold">Dimensione</label><input type="range" id="sizeInput" min="5" max="300" step="1" value="30" class="w-full"></div>
-                    </div>
-                    <div id="shapeSpecificControls" class="hidden">
-                         <div class="mb-3"><label class="text-[10px] text-gray-200 uppercase font-bold">Larghezza</label><input type="range" id="shapeWidthInput" min="10" max="800" step="5" value="100" class="w-full"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="exportSection" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-green-500">
-                <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-file-export text-green-500"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600">3. Esporta</span>
-                </h2>
-                <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2">
-                    <i class="fa-brands fa-amazon"></i> Scarica Cover Kindle HD
-                </button>
-             </div>
-
-            <div id="printSection" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-orange-500 space-y-4">
-                <h2 class="text-lg font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-print text-orange-400"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">4. Formato Paperback (KDP)</span>
-                </h2>
-                <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Trim Size</label>
-                        <select id="trimSizeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white">
-                            <option value="5x8">5" x 8"</option>
-                            <option value="6x9">6" x 9"</option>
-                            <option value="8.5x11" selected>8.5" x 11"</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Pagine</label>
-                        <input type="number" id="pageCountInput" value="100" min="24" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white">
-                      </div>
+        <aside class="w-80 flex-none bg-gray-800 border-r border-gray-700 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-6 z-20">
+            
+            <div class="space-y-4">
+                <h2 class="text-sm font-bold text-fuchsia-400 uppercase tracking-wider border-b border-gray-700 pb-2">1. Generazione AI</h2>
+                <div>
+                    <label class="text-[10px] text-gray-400 uppercase font-bold">Titolo</label>
+                    <input type="text" id="titleInput" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white focus:border-fuchsia-500 outline-none" placeholder="Titolo del libro">
                 </div>
                 <div>
-                      <label class="text-xs text-gray-400 uppercase font-bold">Tipo Carta</label>
-                      <select id="paperTypeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white">
-                          <option value="white">Carta Bianca</option>
-                          <option value="cream">Carta Crema</option>
-                          <option value="color">A Colori</option>
-                      </select>
+                    <label class="text-[10px] text-gray-400 uppercase font-bold">Prompt / Tema</label>
+                    <textarea id="mood" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white focus:border-fuchsia-500 outline-none" placeholder="Descrivi la copertina..."></textarea>
                 </div>
-                
-                <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mb-4">
-                    <i class="fa-solid fa-pen-ruler"></i> Crea Layout KDP
+                <button id="runAgentsBtn" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 text-white font-bold py-3 rounded shadow-lg text-xs uppercase tracking-wide transition transform hover:scale-[1.02]">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Genera HD (1600x2560)
                 </button>
+                <div class="text-[10px] text-gray-500 text-center">Formato nativo verticale bloccato.</div>
+            </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Colore Spina</label><input type="color" id="spineColorInput" class="w-full h-8 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#F59E0B"></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Colore Retro</label><input type="color" id="backColorInput" class="w-full h-8 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#1a202c"></div>
-                </div>
-
-                <div id="paperbackTools" class="hidden space-y-2 pt-4 border-t border-gray-700">
-                    <div class="flex justify-between items-center mt-2">
-                        <span class="text-xs">Mostra Barcode</span>
-                        <input type="checkbox" id="toggleBarcode" class="accent-orange-500">
-                    </div>
-                     <div class="flex justify-between items-center mt-2">
-                        <span class="text-xs">Guide Layout</span>
-                        <input type="checkbox" id="toggleGuides" class="accent-orange-500">
-                    </div>
-                </div>
+            <div id="editingTools" class="hidden space-y-4 animate-fade-in">
+                <h2 class="text-sm font-bold text-yellow-400 uppercase tracking-wider border-b border-gray-700 pb-2">2. Editor Elementi</h2>
                 
-                <button id="downloadPrintBtn" class="w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-400 text-white text-shadow-strong font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mt-4 hidden">
-                    <i class="fa-solid fa-download"></i> Scarica JPG Stampa (300DPI)
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="addTextBtn" class="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-xs font-bold border border-gray-600"><i class="fa-solid fa-font mr-1"></i> Testo</button>
+                    <button id="addShapeBtn" class="bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-xs font-bold border border-gray-600"><i class="fa-solid fa-square mr-1"></i> Box</button>
+                </div>
+
+                <div id="inspectorPanel" class="bg-gray-900 p-3 rounded border border-gray-700 hidden">
+                    <p class="text-[10px] text-yellow-500 font-bold mb-2 uppercase">Proprietà Selezione</p>
+                    
+                    <div id="textControls" class="hidden space-y-2">
+                        <input type="text" id="elContent" class="w-full bg-gray-800 border border-gray-600 rounded p-1 text-xs text-white">
+                        <div class="flex gap-2">
+                            <input type="color" id="elColor" class="h-6 w-8 bg-transparent border-0 cursor-pointer">
+                            <input type="range" id="elSize" min="10" max="400" class="flex-1">
+                        </div>
+                        <div class="flex justify-between">
+                            <button id="alignLeft" class="text-gray-400 hover:text-white"><i class="fa-solid fa-align-left"></i></button>
+                            <button id="alignCenter" class="text-gray-400 hover:text-white"><i class="fa-solid fa-align-center"></i></button>
+                            <button id="alignRight" class="text-gray-400 hover:text-white"><i class="fa-solid fa-align-right"></i></button>
+                        </div>
+                    </div>
+
+                    <button id="deleteElBtn" class="w-full mt-2 bg-red-900/50 text-red-200 text-[10px] py-1 rounded hover:bg-red-900 border border-red-800">Elimina</button>
+                </div>
+            </div>
+
+            <div id="exportKindleSection" class="hidden border-t border-gray-700 pt-4">
+                <button id="dlKindleBtn" class="w-full bg-green-700 hover:bg-green-600 text-white font-bold py-3 rounded text-xs uppercase shadow-lg flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-amazon"></i> Scarica JPG Kindle
                 </button>
             </div>
-        </div>
 
-        <div class="lg:col-span-9 flex flex-col gap-4 lg:sticky lg:top-24 h-full">
+            <div id="paperbackSection" class="hidden space-y-4 border-t border-gray-700 pt-4 animate-fade-in">
+                <h2 class="text-sm font-bold text-orange-400 uppercase tracking-wider border-b border-gray-700 pb-2">4. Layout Stampa (KDP)</h2>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold">Pagine</label>
+                        <input type="number" id="pageCount" value="120" min="24" class="w-full bg-gray-900 border border-orange-900 rounded p-1.5 text-xs text-white">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold">Carta</label>
+                        <select id="paperType" class="w-full bg-gray-900 border border-orange-900 rounded p-1.5 text-xs text-white">
+                            <option value="white">Bianca</option>
+                            <option value="cream">Crema</option>
+                            <option value="color">Colori</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold">Spina</label>
+                        <input type="color" id="spineColor" value="#F59E0B" class="w-full h-6 rounded cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 font-bold">Retro</label>
+                        <input type="color" id="backColor" value="#111827" class="w-full h-6 rounded cursor-pointer">
+                    </div>
+                </div>
+
+                <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 text-white font-bold py-3 rounded shadow-lg text-xs uppercase flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Genera Formato Stampa
+                </button>
+
+                <div id="paperbackToggles" class="hidden space-y-2 bg-gray-900 p-2 rounded border border-gray-700">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-300">Guide KDP (Rosso)</span>
+                        <input type="checkbox" id="toggleGuides" class="accent-orange-500 h-4 w-4">
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-300">Barcode ISBN</span>
+                        <input type="checkbox" id="toggleBarcode" class="accent-orange-500 h-4 w-4">
+                    </div>
+                </div>
+
+                <button id="dlPrintBtn" class="hidden w-full bg-orange-500 hover:bg-orange-400 text-white text-shadow-strong font-bold py-3 rounded shadow-lg text-xs uppercase flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-file-pdf"></i> Scarica File Stampa HD
+                </button>
+            </div>
+
+        </aside>
+
+        <main id="workspace-viewport">
             
-            <div id="topInfoBar" class="hidden flex justify-between items-center bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 shadow-sm">
-                 <div id="canvasInfo" class="text-xs text-gray-400 flex items-center gap-2">
-                     <i class="fa-solid fa-mouse-pointer text-yellow-500"></i>
-                     <span>Clicca e trascina i testi per personalizzarli.</span>
-                 </div>
-                 <div id="canvasDimensionsDisplay" class="text-xs text-orange-200 font-mono"></div>
+            <div id="loader" class="hidden absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/95 backdrop-blur-sm">
+                <div class="banana-loader mb-4"></div>
+                <p id="loaderText" class="text-yellow-500 font-mono text-sm animate-pulse">ELABORAZIONE GRAFICA IN CORSO...</p>
             </div>
 
-            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-[calc(100vh-10rem)] min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden p-2">
-                <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo...</p>
-                </div>
-                
-                <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Genera la base per iniziare.</p></div>
-                
-                <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
-                    <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
-                    <div id="selectionBox" style="display:none;"></div>
-                </div>
-
-                <div id="barcodeArea" class="hidden flex flex-col items-center justify-center">
-                    <div id="barcodeLines"></div>
-                    <div id="barcodeText">ISBN 978-0-00-000000-0</div>
-                </div>
+            <div id="placeholder" class="text-gray-500 flex flex-col items-center pointer-events-none">
+                <i class="fa-solid fa-layer-group text-6xl mb-4 opacity-20"></i>
+                <p class="text-sm font-mono uppercase tracking-widest">In attesa di generazione...</p>
             </div>
-            <canvas id="exportCanvas" class="hidden"></canvas>
-        </div>
+
+            <div id="scaler-container">
+                <div id="interactiveArea" class="hidden shadow-2xl">
+                    <div id="guidesOverlay"></div>
+                    <div id="barcodeArea">
+                        <div id="barcodeLines"></div>
+                        <div id="barcodeText">ISBN-13</div>
+                    </div>
+                    </div>
+            </div>
+
+        </main>
     </div>
+
+    <canvas id="exportCanvas" class="hidden"></canvas>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const state = { 
-                mode: 'kindle', 
-                generatedImageB64: null, 
-                printFrontImage: null, 
-                elements: [], 
-                selectedElementId: null, 
-                idCounter: 0, 
-                canvasScale: 1, 
-                paperbackLayout: null
-            };
+            // --- CONFIGURATION ---
+            // Imperative: Vertical HD Resolution
+            const KINDLE_W = 1600;
+            const KINDLE_H = 2560;
             
-            // --- ELEMENT REFERENCES ---
-            const els = {
-                titleInput: document.getElementById('titleInput'), 
-                mood: document.getElementById('mood'),
-                runAgentsBtn: document.getElementById('runAgentsBtn'),
-                designStudio: document.getElementById('designStudio'),
-                exportSection: document.getElementById('exportSection'),
-                printSection: document.getElementById('printSection'), 
-                initPaperbackBtn: document.getElementById('initPaperbackBtn'),
-                paperbackTools: document.getElementById('paperbackTools'),
-                downloadPrintBtn: document.getElementById('downloadPrintBtn'),
-                trimSizeInput: document.getElementById('trimSizeInput'),
-                pageCountInput: document.getElementById('pageCountInput'),
-                paperTypeInput: document.getElementById('paperTypeInput'), 
-                spineColorInput: document.getElementById('spineColorInput'),
-                backColorInput: document.getElementById('backColorInput'),
-                canvasDimensionsDisplay: document.getElementById('canvasDimensionsDisplay'), 
-                addGenericTextBtn: document.getElementById('addGenericTextBtn'),
-                textInspector: document.getElementById('textInspector'),
-                selectedTextInput: document.getElementById('selectedTextInput'),
-                colorPicker: document.getElementById('colorPicker'),
-                sizeInput: document.getElementById('sizeInput'),
-                textSizeControl: document.getElementById('textSizeControl'),
-                shapeSpecificControls: document.getElementById('shapeSpecificControls'),
-                shapeWidthInput: document.getElementById('shapeWidthInput'),
-                deleteElementBtn: document.getElementById('deleteElementBtn'),
-                addRectBtn: document.getElementById('addRectBtn'),
-                addCircleBtn: document.getElementById('addCircleBtn'),
-                downloadKindleBtn: document.getElementById('downloadKindleBtn'),
-                interactiveArea: document.getElementById('interactiveArea'),
+            const state = {
+                mode: 'idle', // 'kindle' | 'paperback'
+                frontImageB64: null,
+                elements: [],
+                selectedId: null,
+                idCounter: 0,
+                scale: 0.2, // Viewport zoom level
+                paperbackCalc: null
+            };
+
+            // --- DOM ELEMENTS ---
+            const ui = {
+                viewport: document.getElementById('workspace-viewport'),
+                scaler: document.getElementById('scaler-container'),
+                canvas: document.getElementById('interactiveArea'),
                 placeholder: document.getElementById('placeholder'),
                 loader: document.getElementById('loader'),
                 loaderText: document.getElementById('loaderText'),
-                canvasInfo: document.getElementById('canvasInfo'),
+                
+                // Inputs
+                title: document.getElementById('titleInput'),
+                mood: document.getElementById('mood'),
+                
+                // Buttons
+                btnGenerate: document.getElementById('runAgentsBtn'),
+                btnAddText: document.getElementById('addTextBtn'),
+                btnAddShape: document.getElementById('addShapeBtn'),
+                btnInitPaperback: document.getElementById('initPaperbackBtn'),
+                btnDlKindle: document.getElementById('dlKindleBtn'),
+                btnDlPrint: document.getElementById('dlPrintBtn'),
+                btnReset: document.getElementById('resetBtn'),
+                
+                // Panels
+                editingTools: document.getElementById('editingTools'),
+                inspector: document.getElementById('inspectorPanel'),
+                textControls: document.getElementById('textControls'),
+                exportKindle: document.getElementById('exportKindleSection'),
+                paperbackSection: document.getElementById('paperbackSection'),
+                paperbackToggles: document.getElementById('paperbackToggles'),
+                
+                // Info
                 topInfoBar: document.getElementById('topInfoBar'),
-                toggleBarcode: document.getElementById('toggleBarcode'),
+                dimsDisplay: document.getElementById('canvasDimensionsDisplay'),
+                
+                // Layers
+                guides: document.getElementById('guidesOverlay'),
+                barcode: document.getElementById('barcodeArea'),
                 toggleGuides: document.getElementById('toggleGuides'),
-                barcodeArea: document.getElementById('barcodeArea'),
-                guidesOverlay: document.getElementById('guidesOverlay'),
-                exportCanvas: document.getElementById('exportCanvas'),
-                previewContainer: document.getElementById('previewContainer'),
-                resetBtn: document.getElementById('resetBtn')
+                toggleBarcode: document.getElementById('toggleBarcode'),
+                
+                // Paperback Inputs
+                pageCount: document.getElementById('pageCount'),
+                paperType: document.getElementById('paperType'),
+                spineColor: document.getElementById('spineColor'),
+                backColor: document.getElementById('backColor'),
+                
+                // Element Editing
+                elContent: document.getElementById('elContent'),
+                elColor: document.getElementById('elColor'),
+                elSize: document.getElementById('elSize'),
+                btnDel: document.getElementById('deleteElBtn')
             };
 
-            // --- CORE FUNCTIONS ---
+            // --- CORE LOGIC ---
 
-            // Fix per alte risoluzioni: Kindle HD 1600x2560 (Verticale Standard)
-            function initKindleCanvas() {
+            function resizeViewport() {
+                if(state.mode === 'idle') return;
+                
+                // Available space
+                const vw = ui.viewport.clientWidth - 60; // Padding
+                const vh = ui.viewport.clientHeight - 60;
+                
+                // Actual dimensions of current canvas
+                const cw = parseFloat(ui.canvas.style.width);
+                const ch = parseFloat(ui.canvas.style.height);
+                
+                // Calculate Scale to Fit (contain)
+                const scaleW = vw / cw;
+                const scaleH = vh / ch;
+                const scale = Math.min(scaleW, scaleH);
+                
+                state.scale = scale;
+                ui.scaler.style.transform = `scale(${scale})`;
+            }
+
+            window.addEventListener('resize', resizeViewport);
+
+            // 1. GENERATION (Kindle Mode)
+            ui.btnGenerate.addEventListener('click', async () => {
+                if(!ui.title.value) return alert("Inserisci almeno un titolo!");
+                
+                ui.loader.classList.remove('hidden');
+                ui.loaderText.innerText = "GENERAZIONE IMAGE HD (1600x2560)...";
+                
+                // Simulate API call with Pollinations (forcing strict resolution)
+                const prompt = encodeURIComponent(`${ui.title.value} ${ui.mood.value} book cover masterwork high resolution`);
+                const url = `https://image.pollinations.ai/prompt/${prompt}?width=${KINDLE_W}&height=${KINDLE_H}&nologo=true&seed=${Math.floor(Math.random()*1000)}`;
+                
+                try {
+                    const resp = await fetch(url);
+                    const blob = await resp.blob();
+                    const reader = new FileReader();
+                    
+                    reader.onloadend = () => {
+                        state.frontImageB64 = reader.result;
+                        initKindleMode();
+                        ui.loader.classList.add('hidden');
+                    };
+                    reader.readAsDataURL(blob);
+                    
+                } catch(e) {
+                    alert("Errore API Generazione");
+                    ui.loader.classList.add('hidden');
+                }
+            });
+
+            function initKindleMode() {
                 state.mode = 'kindle';
                 
-                // Ratio 1:1.6 (Portrait Standard Kindle)
-                const containerH = els.previewContainer.clientHeight - 20; // Padding
-                const aspectH = containerH; 
-                const aspectW = containerH / 1.6;
-
-                els.interactiveArea.style.width = aspectW + 'px';
-                els.interactiveArea.style.height = aspectH + 'px'; 
-                els.interactiveArea.style.backgroundImage = `url(${state.generatedImageB64})`;
-                els.interactiveArea.style.backgroundSize = 'cover';
-                els.interactiveArea.style.backgroundPosition = 'center';
-                els.interactiveArea.style.backgroundRepeat = 'no-repeat';
+                // Set DOM Dimensions explicitly to High Res
+                ui.canvas.style.width = `${KINDLE_W}px`;
+                ui.canvas.style.height = `${KINDLE_H}px`;
+                ui.canvas.style.backgroundImage = `url(${state.frontImageB64})`;
+                ui.canvas.style.backgroundColor = '#1a202c';
                 
-                // UI Clean up
-                els.placeholder.classList.add('hidden');
-                els.interactiveArea.classList.remove('hidden');
-                els.topInfoBar.classList.remove('hidden'); // Show info bar outside canvas
-                els.canvasDimensionsDisplay.innerHTML = "FORMATO: <b>Kindle HD (1600x2560)</b>";
-
-                els.paperbackTools.classList.add('hidden');
-                els.downloadPrintBtn.classList.add('hidden');
-                els.barcodeArea.classList.add('hidden'); 
-
-                els.interactiveArea.innerHTML = '';
-                els.interactiveArea.appendChild(els.guidesOverlay); 
-                els.guidesOverlay.classList.add('hidden'); 
+                // UI Visibility
+                ui.placeholder.classList.add('hidden');
+                ui.canvas.classList.remove('hidden');
+                ui.editingTools.classList.remove('hidden');
+                ui.exportKindle.classList.remove('hidden');
+                ui.paperbackSection.classList.remove('hidden');
+                ui.topInfoBar.classList.remove('hidden');
                 
-                // Render existing elements
-                state.elements.forEach(el => renderElementDOM(el));
+                // Hide Paperback stuff
+                ui.paperbackToggles.classList.add('hidden');
+                ui.btnDlPrint.classList.add('hidden');
+                ui.guides.style.display = 'none';
+                ui.barcode.style.display = 'none';
+                
+                // Remove spine/back elements if coming from paperback
+                // (Reset canvas structure)
+                
+                ui.dimsDisplay.innerHTML = `KINDLE HD: <span class="text-white">${KINDLE_W}x${KINDLE_H} px</span>`;
+                
+                resizeViewport();
             }
 
-            function updatePrintCalculations() {
-                const [w, h] = els.trimSizeInput.value.split('x').map(parseFloat);
-                const pages = parseInt(els.pageCountInput.value) || 100;
+            // 2. PAPERBACK MODE
+            ui.btnInitPaperback.addEventListener('click', () => {
+                if(!state.frontImageB64) return alert("Nessuna copertina generata!");
                 
-                // Spessori carta standard KDP
-                let paperThickness = 0.002252; // White
-                if (els.paperTypeInput.value === 'cream') paperThickness = 0.0025;
-                else if (els.paperTypeInput.value === 'color') paperThickness = 0.002347;
+                ui.loader.classList.remove('hidden');
+                ui.loaderText.innerText = "CALCOLO LAYOUT DI STAMPA...";
+                
+                setTimeout(() => {
+                    initPaperbackMode();
+                    ui.loader.classList.add('hidden');
+                }, 500);
+            });
 
-                const spine = pages * paperThickness; 
-                const bleed = 0.125; 
+            function initPaperbackMode() {
+                state.mode = 'paperback';
                 
-                // Width = Back + Spine + Front + Bleeds
-                const totalW_inch = bleed + w + spine + w + bleed;
-                const totalH_inch = bleed + h + bleed;
+                // Calculations (Using 300 DPI logic)
+                const pages = parseInt(ui.pageCount.value) || 120;
+                let thickness = 0.002252 * pages; // White paper inches
+                if(ui.paperType.value === 'cream') thickness = 0.0025 * pages;
                 
                 const dpi = 300;
-                const pxW = Math.ceil(totalW_inch * dpi);
-                const pxH = Math.ceil(totalH_inch * dpi);
                 
-                return { pxW, pxH, frontPx: w*dpi, spinePx: spine*dpi, bleedPx: bleed*dpi };
-            }
-
-            // Fix: Logica di inquadratura perfetta per la Sezione 4
-            function initPaperbackMode() {
-                if(!state.generatedImageB64) return alert("Genera prima la copertina!");
+                // Fixed Height Logic: The Front Cover Height (2560px) determines the Print Height.
+                // 2560px / 300dpi = 8.53 inches (Trim height + bleed)
+                // We don't resize the front image. We wrap the rest around it.
                 
-                const wasKindle = (state.mode === 'kindle');
-                state.mode = 'paperback';
-                const calc = updatePrintCalculations();
-
-                // Calcolo dimensionamento per "Fit to Screen" (Contain)
-                // Usiamo le dimensioni del contenitore padre per assicurarci che non esca
-                const containerW = els.previewContainer.clientWidth - 40; 
-                const containerH = els.previewContainer.clientHeight - 40;
+                const spinePx = Math.ceil(thickness * dpi);
+                const bleedPx = Math.ceil(0.125 * dpi);
                 
-                const scaleW = containerW / calc.pxW;
-                const scaleH = containerH / calc.pxH;
-                const scale = Math.min(scaleW, scaleH); // Prendi il più piccolo per "contain"
-
-                const viewW = calc.pxW * scale;
-                const viewH = calc.pxH * scale;
+                // Front width is 1600. So we assume Back width is also 1600.
+                // But Front includes bleed on right? 
+                // Let's assume 1600x2560 is the Full Front (Trim + Bleed).
                 
-                els.interactiveArea.style.width = viewW + 'px';
-                els.interactiveArea.style.height = viewH + 'px';
+                // Total Width = Back (1600) + Spine + Front (1600) -> Approximation for simplified logic
+                // To be precise: Front is 1600. Back is 1600. Spine is calculated.
                 
-                els.canvasDimensionsDisplay.innerHTML = `FORMATO STAMPA: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+                const totalW = 1600 + spinePx + 1600;
+                const totalH = 2560; // Fixed Height
                 
-                // Creazione Background (Spina + Retro + Fronte)
-                const bgCanvas = document.createElement('canvas');
-                bgCanvas.width = calc.pxW; bgCanvas.height = calc.pxH;
-                const ctx = bgCanvas.getContext('2d');
+                state.paperbackCalc = { totalW, totalH, spinePx, frontW: 1600, backW: 1600 };
                 
-                const frontImg = new Image();
-                frontImg.onload = () => {
-                    // 1. Colore Retro
-                    ctx.fillStyle = els.backColorInput.value; 
-                    ctx.fillRect(0,0, calc.pxW, calc.pxH);
+                // Resize Canvas DOM
+                ui.canvas.style.width = `${totalW}px`;
+                ui.canvas.style.height = `${totalH}px`;
+                
+                // CREATE COMPOSITE BACKGROUND
+                // Instead of using 'background-image' which repeats, we use a generated canvas dataURL
+                const bgC = document.createElement('canvas');
+                bgC.width = totalW; bgC.height = totalH;
+                const ctx = bgC.getContext('2d');
+                
+                const img = new Image();
+                img.onload = () => {
+                    // 1. Back Color
+                    ctx.fillStyle = ui.backColor.value;
+                    ctx.fillRect(0, 0, 1600, totalH);
                     
-                    // 2. Spina
-                    ctx.fillStyle = els.spineColorInput.value;
-                    const backCoverWidth = calc.bleedPx + calc.frontPx; 
-                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, calc.pxH);
-
-                    // 3. Immagine Fronte (ESATTAMENTE quella generata/editata)
-                    const fx = backCoverWidth + calc.spinePx;
-                    const fw = calc.frontPx + calc.bleedPx; 
-                    const fh = calc.pxH; 
+                    // 2. Spine Color
+                    ctx.fillStyle = ui.spineColor.value;
+                    ctx.fillRect(1600, 0, spinePx, totalH);
                     
-                    // Crop/Fit image to front panel
-                    const imgR = frontImg.width / frontImg.height;
-                    const targetR = fw / fh;
-                    let dW, dH, dX, dY;
+                    // 3. Front Image
+                    ctx.drawImage(img, 1600 + spinePx, 0, 1600, 2560);
                     
-                    if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                    else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
+                    ui.canvas.style.backgroundImage = `url(${bgC.toDataURL()})`;
                     
-                    ctx.save(); 
-                    ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
-                    ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
-                    ctx.restore();
-                    
-                    els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
-                    els.interactiveArea.style.backgroundSize = 'contain';
-                };
-                frontImg.src = state.generatedImageB64; // Usa l'immagine originale generata
-                
-                // Reset e setup UI
-                els.interactiveArea.innerHTML = '';
-                els.interactiveArea.appendChild(els.guidesOverlay); 
-                els.interactiveArea.appendChild(els.barcodeArea); 
-                
-                if(els.toggleBarcode.checked) els.barcodeArea.classList.remove('hidden');
-                else els.barcodeArea.classList.add('hidden');
-
-                if(els.toggleGuides.checked) {
-                    drawKDPGuides(calc, viewW, viewH);
-                    els.guidesOverlay.classList.remove('hidden');
-                } else els.guidesOverlay.classList.add('hidden');
-
-                // Posizionamento Barcode (in basso a sinistra del retro)
-                const visualBackEnd = (calc.bleedPx + calc.frontPx) * scale;
-                els.barcodeArea.style.left = (visualBackEnd - 100) + 'px'; 
-                els.barcodeArea.style.top = (viewH - 70) + 'px';
-
-                els.paperbackTools.classList.remove('hidden');
-                els.downloadPrintBtn.classList.remove('hidden');
-                state.paperbackLayout = calc;
-                state.canvasScale = scale;
-                
-                // Ricalcolo posizioni elementi se veniamo da Kindle
-                if (wasKindle) {
-                    const kindleWidth = parseFloat(aspectW || 400); // approx
-                    const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
-                    const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
-                    const elementScale = frontCoverVisualWidth / kindleWidth; // Rappoto di scala visiva
-                    
+                    // Re-position existing elements?
+                    // If user added text on kindle mode at x=100, now it should be x = 100 + 1600 + spinePx
+                    const shiftX = 1600 + spinePx;
                     state.elements.forEach(el => {
-                        // Sposta gli elementi dal canvas Kindle (0,0) al pannello frontale del canvas Paperback
-                        el.x = (el.x * elementScale) + frontCoverStartX;
-                        el.y = (el.y * elementScale);
-                        // Scala dimensioni e font
-                        let fSize = parseFloat(el.style.fontSize);
-                        el.style.fontSize = (fSize * elementScale) + 'px';
-                        if(el.type === 'shape' || el.type === 'image') {
-                            el.width = el.width * elementScale;
-                            if(el.height) el.height = el.height * elementScale;
+                        // Only shift if not already shifted (simple check logic or just reset x)
+                        // For this demo, we assume transition happens once. 
+                        // To allow switching back and forth, we would store relative coords.
+                        // Here we just shift visually.
+                        const domEl = document.getElementById(el.id);
+                        const currentLeft = parseFloat(domEl.style.left);
+                        if(currentLeft < 1600) { // Check if it looks like it's still in old coords
+                             domEl.style.left = (currentLeft + shiftX) + 'px';
+                             el.x = currentLeft + shiftX;
                         }
                     });
-                }
+                };
+                img.src = state.frontImageB64;
                 
-                // Re-renderizza gli elementi nel DOM
-                state.elements.forEach(el => renderElementDOM(el));
+                // UI Updates
+                ui.paperbackToggles.classList.remove('hidden');
+                ui.btnDlPrint.classList.remove('hidden');
+                ui.exportKindle.classList.add('hidden'); // Hide Kindle export button in Print mode
+                
+                ui.dimsDisplay.innerHTML = `STAMPA KDP: <span class="text-white">${totalW}x${totalH} px</span>`;
+                
+                // Position Barcode (Bottom Left of Back Cover)
+                ui.barcode.style.left = `${(1600/2) - 140}px`; // Centered on back cover roughly
+                ui.barcode.style.top = `${2560 - 250}px`;
+                
+                resizeViewport();
             }
 
-            function renderAndDownload(type) {
-                if (!state.generatedImageB64) return alert("Nessun design da esportare!");
+            // 3. SWITCHES FIX
+            // We use simple CSS display toggling on existing elements. No re-rendering loops.
+            ui.toggleGuides.addEventListener('change', (e) => {
+                if(state.mode !== 'paperback') return;
+                ui.guides.style.display = e.target.checked ? 'block' : 'none';
+                if(e.target.checked) drawGuides();
+            });
 
-                const canvas = els.exportCanvas;
-                const ctx = canvas.getContext('2d');
-                let targetW, targetH;
+            ui.toggleBarcode.addEventListener('change', (e) => {
+                if(state.mode !== 'paperback') return;
+                ui.barcode.style.display = e.target.checked ? 'flex' : 'none';
+            });
 
-                if (type === 'kindle') {
-                    // RICHIESTA UTENTE: 1600x2560 (Verticale HD)
-                    // Nota: Se intendevi 2560 width (Landscape), scambia i valori.
-                    targetW = 1600; 
-                    targetH = 2560;
+            function drawGuides() {
+                const c = state.paperbackCalc;
+                if(!c) return;
+                
+                ui.guides.innerHTML = ''; // Clear prev
+                
+                // Helper to create box
+                const createBox = (l, t, w, h, color, label) => {
+                    const d = document.createElement('div');
+                    d.className = 'guide-line';
+                    d.style.left = l+'px'; d.style.top = t+'px';
+                    d.style.width = w+'px'; d.style.height = h+'px';
+                    d.style.borderColor = color;
+                    
+                    if(label) {
+                        const lb = document.createElement('div');
+                        lb.className = 'guide-label';
+                        lb.innerText = label;
+                        d.appendChild(lb);
+                    }
+                    ui.guides.appendChild(d);
+                };
+                
+                // Bleed Margin (0.125" = 37.5px approx @300dpi)
+                const bleed = 38;
+                const margin = 75; // Safe zone 0.25"
+                
+                // Full Trim Line
+                createBox(bleed, bleed, c.totalW - (bleed*2), c.totalH - (bleed*2), 'red', 'TRIM LINE');
+                
+                // Spine Fold Lines
+                createBox(1600, 0, c.spinePx, c.totalH, 'orange', 'SPINE');
+                
+                // Safe Zone Back
+                createBox(bleed+margin, bleed+margin, 1600 - (bleed*2) - (margin*2), c.totalH - (bleed*2) - (margin*2), 'blue');
+            }
+
+            // 4. ELEMENT SYSTEM (Drag & Drop)
+            ui.btnAddText.addEventListener('click', () => addElement('text'));
+            ui.btnAddShape.addEventListener('click', () => addElement('shape'));
+
+            function addElement(type) {
+                const id = `el-${state.idCounter++}`;
+                const el = document.createElement('div');
+                el.id = id;
+                el.className = 'draggable-item';
+                
+                // Initial Pos (Center of current viewport roughly)
+                // For simplified logic, put at 500,500
+                let startX = 500;
+                let startY = 800;
+                if(state.mode === 'paperback') startX += 1600; // Put on front cover
+
+                el.style.left = startX + 'px';
+                el.style.top = startY + 'px';
+                
+                if(type === 'text') {
+                    el.innerText = 'Nuovo Testo';
+                    el.style.color = '#ffffff';
+                    el.style.fontSize = '80px'; // High Res Canvas needs big fonts
+                    el.style.fontWeight = 'bold';
+                    el.style.textShadow = '0 2px 10px rgba(0,0,0,0.5)';
                 } else {
-                    const calc = updatePrintCalculations();
-                    targetW = calc.pxW;
-                    targetH = calc.pxH;
+                    el.style.width = '300px';
+                    el.style.height = '300px';
+                    el.style.backgroundColor = '#F59E0B';
                 }
 
-                canvas.width = targetW;
-                canvas.height = targetH;
-                const scaleFactor = targetW / parseFloat(els.interactiveArea.style.width);
+                // Drag Logic
+                el.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    selectElement(id);
+                    startDrag(e, el);
+                });
 
-                const bgImg = new Image();
-                bgImg.crossOrigin = "anonymous";
-                bgImg.onload = () => {
-                     // 1. Draw BG
-                     if(type === 'kindle') {
-                         const r = bgImg.width / bgImg.height;
-                         const tr = targetW / targetH;
-                         let dw, dh, dx, dy;
-                         if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
-                         else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
-                         ctx.drawImage(bgImg, dx, dy, dw, dh);
-                     } else {
-                         // Re-draw paperback base logic for high-res export
-                         const calc = updatePrintCalculations();
-                         ctx.fillStyle = els.backColorInput.value; ctx.fillRect(0,0, targetW, targetH);
-                         const spineStart = calc.bleedPx + calc.frontPx; 
-                         ctx.fillStyle = els.spineColorInput.value; ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
-                         // Draw front image clipped
-                         const fx = spineStart + calc.spinePx;
-                         const fw = calc.frontPx + calc.bleedPx;
-                         const imgR = bgImg.width / bgImg.height;
-                         const targetR = fw / targetH;
-                         let dW, dH, dX, dY;
-                         if (imgR > targetR) { dH = targetH; dW = targetH * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                         else { dW = fw; dH = fw / imgR; dX = fx; dY = (targetH - dH)/2; }
-                         ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, targetH); ctx.clip();
-                         ctx.drawImage(bgImg, dX, dY, dW, dH); ctx.restore();
-                     }
-
-                     // 2. Draw Elements (Scaled)
-                     state.elements.forEach(el => {
-                         const domEl = document.getElementById(el.id);
-                         let rectW = el.width || 100;
-                         let rectH = el.height || el.width || 100;
-                         if (domEl) { rectW = domEl.offsetWidth; rectH = domEl.offsetHeight; }
-
-                         const scaledW = rectW * scaleFactor;
-                         const scaledH = rectH * scaleFactor;
-                         const centerX = (el.x * scaleFactor) + (scaledW / 2);
-                         const centerY = (el.y * scaleFactor) + (scaledH / 2);
-
-                         ctx.save();
-                         ctx.translate(centerX, centerY);
-                         ctx.rotate(el.rotation * Math.PI / 180);
-                         
-                         const drawX = -scaledW / 2;
-                         const drawY = -scaledH / 2;
-
-                         if(el.type === 'text') {
-                             const fSize = parseFloat(window.getComputedStyle(domEl).fontSize) * scaleFactor;
-                             ctx.font = `${el.style.fontWeight} ${fSize}px ${el.style.fontFamily.replace(/'/g, "")}`;
-                             ctx.fillStyle = el.style.color;
-                             ctx.textAlign = el.style.textAlign || 'center';
-                             ctx.textBaseline = 'middle';
-                             ctx.fillText(el.content, 0, 0);
-                         } else if (el.type === 'shape') {
-                             ctx.fillStyle = el.style.color;
-                             if(el.shapeType === 'rect') ctx.fillRect(drawX, drawY, scaledW, scaledH);
-                             else if(el.shapeType === 'circle') { ctx.beginPath(); ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); ctx.fill(); }
-                         }
-                         ctx.restore();
-                     });
-
-                     // Download
-                     const link = document.createElement('a');
-                     link.download = `cover-${type}-${Date.now()}.jpg`;
-                     link.href = canvas.toDataURL('image/jpeg', 0.95);
-                     link.click();
-                };
-                bgImg.src = state.generatedImageB64;
+                ui.canvas.appendChild(el);
+                state.elements.push({ id, type });
+                selectElement(id);
             }
-
-            // --- HELPER FUNCTIONS & LISTENERS ---
-            
-            function addElement(type, content) {
-                const id = `el_${state.idCounter++}`;
-                let el = { 
-                    id, type, content, x: 50, y: 50, rotation: 0,
-                    style: { color: '#ffffff', fontSize: 30, fontFamily: "'Inter', sans-serif", fontWeight: 'normal', textAlign: 'center' }
-                };
-                if (type === 'shape') { el.width = 100; el.height = 100; el.shapeType = content; el.style.color = '#F59E0B'; }
-                state.elements.push(el); renderElementDOM(el); selectElement(id);
-            }
-
-            function renderElementDOM(el) {
-                const div = document.createElement('div');
-                div.id = el.id; div.className = 'draggable-item';
-                div.style.left = el.x + 'px'; div.style.top = el.y + 'px';
-                
-                if(el.type === 'text') {
-                    div.innerText = el.content || 'Testo';
-                    Object.assign(div.style, el.style);
-                    if (typeof el.style.fontSize === 'number') div.style.fontSize = el.style.fontSize + 'px';
-                } else if (el.type === 'shape') {
-                    div.style.width = el.width + 'px'; div.style.height = (el.height || el.width) + 'px';
-                    div.style.backgroundColor = el.style.color;
-                    if(el.shapeType === 'circle') div.style.borderRadius = '50%';
-                }
-
-                div.addEventListener('mousedown', startDrag);
-                div.addEventListener('click', (e) => { e.stopPropagation(); selectElement(el.id); });
-                els.interactiveArea.appendChild(div);
-            }
-
-            // Dragging Logic
-            let dragged = null, startX=0, startY=0;
-            function startDrag(e) { dragged = e.currentTarget; const rect = dragged.getBoundingClientRect(); startX = e.clientX - rect.left; startY = e.clientY - rect.top; document.addEventListener('mousemove', onDrag); document.addEventListener('mouseup', endDrag); selectElement(dragged.id); }
-            function onDrag(e) { if(!dragged) return; const cont = els.interactiveArea.getBoundingClientRect(); const x = e.clientX - cont.left - startX; const y = e.clientY - cont.top - startY; dragged.style.left = x + 'px'; dragged.style.top = y + 'px'; const el = state.elements.find(i => i.id === dragged.id); if(el) { el.x = x; el.y = y; } }
-            function endDrag() { dragged = null; document.removeEventListener('mousemove', onDrag); document.removeEventListener('mouseup', endDrag); }
 
             function selectElement(id) {
-                state.selectedElementId = id;
-                els.deleteElementBtn.classList.remove('hidden');
-                els.textInspector.classList.remove('hidden');
-                // Populate inputs (omitted for brevity)
+                // Deselect others
+                document.querySelectorAll('.draggable-item').forEach(e => e.classList.remove('selected'));
+                state.selectedId = id;
+                
+                const el = document.getElementById(id);
+                if(!el) return;
+                
+                el.classList.add('selected');
+                ui.inspector.classList.remove('hidden');
+                
+                // Bind Inspector Inputs
+                if(el.innerText) {
+                    ui.textControls.classList.remove('hidden');
+                    ui.elContent.value = el.innerText;
+                    ui.elContent.oninput = (e) => el.innerText = e.target.value;
+                    ui.elColor.value = rgbToHex(el.style.color || el.style.backgroundColor);
+                    ui.elColor.oninput = (e) => {
+                        if(el.innerText) el.style.color = e.target.value;
+                        else el.style.backgroundColor = e.target.value;
+                    };
+                    ui.elSize.value = parseInt(el.style.fontSize) || 100;
+                    ui.elSize.oninput = (e) => el.style.fontSize = e.target.value + 'px';
+                } else {
+                    ui.textControls.classList.add('hidden');
+                }
+            }
+
+            let draggedEl = null;
+            let offset = { x:0, y:0 };
+
+            function startDrag(e, el) {
+                draggedEl = el;
+                // Calculate cursor offset relative to element
+                // We must account for the Scale transform of the container
+                const rect = el.getBoundingClientRect();
+                // To keep it simple in scaled env: use movement deltas
+            }
+
+            window.addEventListener('mousemove', (e) => {
+                if(!draggedEl) return;
+                
+                // Movement delta needs to be divided by scale to match canvas pixels
+                const dx = e.movementX / state.scale;
+                const dy = e.movementY / state.scale;
+                
+                const curL = parseFloat(draggedEl.style.left) || 0;
+                const curT = parseFloat(draggedEl.style.top) || 0;
+                
+                draggedEl.style.left = (curL + dx) + 'px';
+                draggedEl.style.top = (curT + dy) + 'px';
+            });
+
+            window.addEventListener('mouseup', () => draggedEl = null);
+
+            ui.btnDel.addEventListener('click', () => {
+                if(state.selectedId) {
+                    const el = document.getElementById(state.selectedId);
+                    if(el) el.remove();
+                    ui.inspector.classList.add('hidden');
+                    state.selectedId = null;
+                }
+            });
+
+            // 5. EXPORT
+            ui.btnDlKindle.addEventListener('click', () => downloadCanvas('kindle'));
+            ui.btnDlPrint.addEventListener('click', () => downloadCanvas('print'));
+
+            function downloadCanvas(type) {
+                // Use html2canvas logic or draw to hidden canvas
+                // For robust solution here, we recomposite on hidden canvas
+                const c = document.getElementById('exportCanvas');
+                const ctx = c.getContext('2d');
+                
+                const w = parseFloat(ui.canvas.style.width);
+                const h = parseFloat(ui.canvas.style.height);
+                
+                c.width = w;
+                c.height = h;
+                
+                // 1. Draw Background
+                const bgImg = new Image();
+                bgImg.crossOrigin = 'anonymous'; // Important for external images
+                // Extract url from style
+                const bgUrl = ui.canvas.style.backgroundImage.slice(5, -2);
+                
+                bgImg.onload = () => {
+                    ctx.drawImage(bgImg, 0, 0, w, h);
+                    
+                    // 2. Draw Elements
+                    // (Simple iteration over DOM elements logic)
+                    const items = ui.canvas.querySelectorAll('.draggable-item');
+                    items.forEach(item => {
+                        const x = parseFloat(item.style.left);
+                        const y = parseFloat(item.style.top);
+                        
+                        if(item.innerText) {
+                            const size = window.getComputedStyle(item).fontSize;
+                            const color = window.getComputedStyle(item).color;
+                            const weight = window.getComputedStyle(item).fontWeight;
+                            ctx.font = `${weight} ${size} Inter`;
+                            ctx.fillStyle = color;
+                            ctx.fillText(item.innerText, x, y + parseFloat(size)); // Baseline adjust
+                        } else {
+                            const bw = parseFloat(item.style.width);
+                            const bh = parseFloat(item.style.height);
+                            ctx.fillStyle = item.style.backgroundColor;
+                            ctx.fillRect(x, y, bw, bh);
+                        }
+                    });
+                    
+                    // 3. Download
+                    const a = document.createElement('a');
+                    a.download = `Cover-${type}.jpg`;
+                    a.href = c.toDataURL('image/jpeg', 0.9);
+                    a.click();
+                };
+                bgImg.src = bgUrl;
+            }
+
+            // Utils
+            function rgbToHex(col) {
+                if(col.charAt(0)=='#') return col;
+                // Basic parser for rgb()
+                const rgb = col.match(/\d+/g);
+                if(!rgb) return '#ffffff';
+                return "#" + ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
             }
             
-            // Mock Generation
-            async function generateBaseArtwork() {
-                if(!els.titleInput.value) return alert("Titolo richiesto!");
-                els.loader.classList.remove('hidden');
-                
-                // MOCK IMAGE for demo (Pinocchio style)
-                setTimeout(() => {
-                    // Placeholder image URL
-                    state.generatedImageB64 = "https://image.pollinations.ai/prompt/pinocchio%20storybook%20cover%20vintage%20style?width=800&height=1200&nologo=true";
-                    initKindleCanvas(); 
-                    els.designStudio.classList.remove('hidden');
-                    els.printSection.classList.remove('hidden');
-                    els.exportSection.classList.remove('hidden');
-                    els.loader.classList.add('hidden');
-                }, 1500);
-            }
-
-            function drawKDPGuides(calc, viewW, viewH) {
-                // Logic to draw overlays (bleed, safe zone) based on calc
-                // Simplified for this snippet
-                els.guidesOverlay.innerHTML = `<div style="border:1px dashed red; width:100%; height:100%"></div>`; 
-            }
-
-            // Listeners
-            els.runAgentsBtn.addEventListener('click', generateBaseArtwork);
-            els.initPaperbackBtn.addEventListener('click', initPaperbackMode);
-            els.downloadKindleBtn.addEventListener('click', () => renderAndDownload('kindle'));
-            els.downloadPrintBtn.addEventListener('click', () => renderAndDownload('print'));
-            els.addGenericTextBtn.addEventListener('click', () => addElement('text', 'Titolo'));
-            els.addRectBtn.addEventListener('click', () => addElement('shape', 'rect'));
-            els.addCircleBtn.addEventListener('click', () => addElement('shape', 'circle'));
-            els.deleteElementBtn.addEventListener('click', () => { 
-                const el = document.getElementById(state.selectedElementId);
-                if(el) el.remove();
-                state.elements = state.elements.filter(e => e.id !== state.selectedElementId);
-                els.deleteElementBtn.classList.add('hidden');
-            });
-            els.toggleBarcode.addEventListener('change', (e) => {
-                 els.barcodeArea.classList.toggle('hidden', !e.target.checked);
-            });
-            els.toggleGuides.addEventListener('change', (e) => {
-                 els.guidesOverlay.classList.toggle('hidden', !e.target.checked);
-            });
+            ui.btnReset.addEventListener('click', () => location.reload());
         });
     </script>
 </body>

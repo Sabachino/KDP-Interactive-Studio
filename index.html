@@ -232,7 +232,7 @@
 <body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900">
 
     <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="w-full px-6 mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-layer-group text-yellow-400 text-2xl"></i>
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
@@ -249,13 +249,13 @@
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 relative items-start">
+    <div class="w-full px-6 mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 relative items-start">
         <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto custom-scrollbar pr-2">
             
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300">
                 <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-brain text-fuchsia-300"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione Nano Banana</span>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione Cover AI</span>
                 </h2>
                 <div class="space-y-4">
                     <div>
@@ -264,7 +264,7 @@
                     </div>
                     <div>
                         <label class="text-xs text-gray-200 uppercase font-bold">Tema della Copertina</label>
-                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto per Nano Banana Pro..."></textarea>
+                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto per il tuo Design..."></textarea>
                     </div>
                     <div>
                         <label class="text-xs text-gray-200 uppercase font-bold">Genere (Stile Artistico)</label>
@@ -272,7 +272,7 @@
                             <option value="none">Nessuno (usa solo il tema)</option>
                             <option value="fantasy">Fantasy / Epico</option>
                             <option value="realistic">Realistico (Fotografico 8K)</option>
-                            <option value="vintage">Vintage (RetrÃ²)</option>
+                            <option value="vintage">Vintage (Retrò)</option>
                             <option value="business">Business (Minimalista)</option>
                             <option value="cinematic">Cinematico</option>
                             <option value="narrative">Narrativa</option>
@@ -287,7 +287,7 @@
 
                     <div id="modificationArea" class="hidden mt-4 pt-4 border-t border-gray-700 animate-fade-in bg-gray-900 rounded p-2">
                         <label class="text-xs text-yellow-100 uppercase font-bold mb-2 block flex items-center gap-1"><i class="fa-solid fa-paintbrush"></i> Migliora / Modifica Globale</label>
-                        <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2.5 text-sm text-white focus:border-yellow-500 outline-none mb-2" placeholder="Es. Aggiungi piÃ¹ nebbia..."></textarea>
+                        <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2.5 text-sm text-white focus:border-yellow-500 outline-none mb-2" placeholder="Es. Aggiungi più nebbia..."></textarea>
                         
                         <div class="grid grid-cols-2 gap-2">
                             <button type="button" id="modifyArtworkBtn" class="w-full bg-purple-500 hover:bg-purple-400 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg transition-all text-xs flex justify-center items-center gap-2">
@@ -433,7 +433,7 @@
                     
                     <div id="opacityControl" class="mb-3 hidden">
                          <div class="flex items-center justify-between mb-1">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">OpacitÃ </label>
+                            <label class="text-[10px] text-gray-200 uppercase font-bold">Opacità</label>
                             <span id="opacityValue" class="text-[10px] text-gray-200">100%</span>
                          </div>
                          <input type="range" id="opacityInput" min="0" max="1" step="0.1" value="1" class="w-full">
@@ -454,15 +454,15 @@
                         
                         <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Ombra</label><input type="color" id="shadowColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="shadowBlurInput" min="0" max="20" step="0.5" value="0" class="w-full"></div>
                         <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Offset</label><span id="offsetValue" class="text-[10px] text-gray-200">2px</span></div><input type="range" id="shadowOffsetInput" min="0" max="50" step="0.5" value="2" class="w-full"></div>
-                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Angolatura</label><span id="angleValue" class="text-[10px] text-gray-200">45Â°</span></div><input type="range" id="shadowAngleInput" min="0" max="360" step="15" value="45" class="w-full"></div>
+                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Angolatura</label><span id="angleValue" class="text-[10px] text-gray-200">45°</span></div><input type="range" id="shadowAngleInput" min="0" max="360" step="15" value="45" class="w-full"></div>
                         
                         <div>
                             <div class="flex items-center justify-between mb-1">
                                 <label class="text-[10px] text-gray-200 uppercase font-bold">Rotazione</label>
                                 <div class="flex items-center gap-1">
-                                    <span id="rotationValue" class="text-[10px] text-gray-200 w-8 text-right mr-1">0Â°</span>
-                                    <button id="resetRotationBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Orizzontale (0Â°)">0Â°</button>
-                                    <button id="rotateNegative90Btn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Verticale Spina (-90Â°)">-90Â°</button>
+                                    <span id="rotationValue" class="text-[10px] text-gray-200 w-8 text-right mr-1">0°</span>
+                                    <button id="resetRotationBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Orizzontale (0°)">0°</button>
+                                    <button id="rotateNegative90Btn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Verticale Spina (-90°)">-90°</button>
                                 </div>
                             </div>
                             <input type="range" id="rotationInput" min="-180" max="180" step="1" value="0" class="w-full">
@@ -615,7 +615,7 @@
                         <div>
                             <div class="flex items-center justify-between mb-1">
                                 <label class="text-[10px] text-gray-400 uppercase font-bold">Rotazione</label>
-                                <span id="imgRotationValue" class="text-[10px] text-gray-500">0Â°</span>
+                                <span id="imgRotationValue" class="text-[10px] text-gray-500">0°</span>
                             </div>
                             <input type="range" id="imgRotationInput" min="-180" max="180" step="1" value="0" class="w-full">
                         </div>
@@ -636,7 +636,7 @@
         <div class="lg:col-span-8 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
             <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 min-h-[600px] flex flex-col items-center justify-center relative overflow-hidden p-8">
                 <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover Ã¨ in arrivo..........</p>
+                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
                 </div>
                 <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
                 <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
@@ -1411,9 +1411,9 @@
                         div.style.width = el.width + 'px';
                         div.style.height = h + 'px';
                       } else if (el.shapeType === 'bullet') {
-                         const icon = div.querySelector('div');
-                         if(icon) icon.style.backgroundColor = el.style.color;
-                         div.style.width = el.width + 'px';
+                          const icon = div.querySelector('div');
+                          if(icon) icon.style.backgroundColor = el.style.color;
+                          div.style.width = el.width + 'px';
                       } else {
                         div.style.backgroundColor = el.style.color;
                         div.style.width = el.width + 'px';
@@ -1442,7 +1442,7 @@
                     els.opacityInput.value = el.style.opacity || 1;
                     els.opacityValue.innerText = Math.round((el.style.opacity || 1) * 100) + '%';
                     els.rotationInput.value = el.rotation;
-                    els.rotationValue.innerText = el.rotation + 'Â°';
+                    els.rotationValue.innerText = el.rotation + '°';
                     
                     if(el.type === 'text') {
                         els.textSpecificControls.classList.remove('hidden'); 
@@ -1466,11 +1466,11 @@
                         els.alignCenterBtn.classList.toggle('active', el.style.textAlign === 'center');
                         els.alignRightBtn.classList.toggle('active', el.style.textAlign === 'right');
                         
-                        const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + 'Â°';
+                        const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + '°';
                     } else if (el.type === 'image') {
                         els.textInspector.classList.add('hidden'); els.imageInspector.classList.remove('hidden');
                         els.imgSizeInput.value = el.width; els.imgSizeValue.innerText = el.width;
-                        els.imgRotationInput.value = el.rotation; els.imgRotationValue.innerText = el.rotation + 'Â°';
+                        els.imgRotationInput.value = el.rotation; els.imgRotationValue.innerText = el.rotation + '°';
                     } else if (el.type === 'shape') {
                         els.textSpecificControls.classList.add('hidden');
                         els.textSizeControl.classList.add('hidden');
@@ -1481,7 +1481,7 @@
                         
                         els.shapeWidthInput.value = el.width; els.shapeWidthDisplay.innerText = el.width + 'px';
                         els.shapeHeightInput.value = el.height || el.width; els.shapeHeightDisplay.innerText = (el.height || el.width) + 'px';
-                        const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + 'Â°';
+                        const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + '°';
 
                         // Show/Hide Border Radius Control specifically for Rectangles
                         if(el.shapeType === 'rect') {
@@ -1592,7 +1592,7 @@
                 
                 els.loader.classList.remove('hidden');
                 // AGGIUNTA LOGICA PER RESETTARE IL TESTO DEL LOADER AL MESSAGGIO DI GENERAZIONE
-                els.loaderText.innerText = "la tua cover Ã¨ in arrivo..........";
+                els.loaderText.innerText = "la tua cover è in arrivo..........";
                 
                 els.modificationPrompt.value = ''; 
                 state.mode = 'kindle';
@@ -1649,10 +1649,10 @@
                 // 2. Definizione Prezzo e Oggetto
                 let price, itemName;
                 if(type === 'kindle') {
-                    price = "10.00â‚¬"; // PREZZO AGGIORNATO
+                    price = "10.00€"; // PREZZO AGGIORNATO
                     itemName = "Kindle Cover HD (JPG)";
                 } else {
-                    price = "20.00â‚¬"; // PREZZO AGGIORNATO
+                    price = "20.00€"; // PREZZO AGGIORNATO
                     itemName = "KDP Print Layout (300DPI)";
                 }
 
@@ -1959,13 +1959,13 @@
             els.shadowColorPicker.addEventListener('input', updateShadow);
             els.shadowBlurInput.addEventListener('input', updateShadow);
             els.shadowOffsetInput.addEventListener('input', (e) => { els.offsetValue.innerText = e.target.value + 'px'; updateShadow(); });
-            els.shadowAngleInput.addEventListener('input', (e) => { els.angleValue.innerText = e.target.value + 'Â°'; updateShadow(); });
-            els.rotationInput.addEventListener('input', (e) => { els.rotationValue.innerText = e.target.value + 'Â°'; updateSelectedElement('rotation', parseInt(e.target.value)); });
-            els.resetRotationBtn.addEventListener('click', () => { if(state.selectedElementId) { els.rotationInput.value = 0; els.rotationValue.innerText = '0Â°'; updateSelectedElement('rotation', 0); } });
-            els.rotateNegative90Btn.addEventListener('click', () => { if(state.selectedElementId) { els.rotationInput.value = -90; els.rotationValue.innerText = '-90Â°'; updateSelectedElement('rotation', -90); } });
+            els.shadowAngleInput.addEventListener('input', (e) => { els.angleValue.innerText = e.target.value + '°'; updateShadow(); });
+            els.rotationInput.addEventListener('input', (e) => { els.rotationValue.innerText = e.target.value + '°'; updateSelectedElement('rotation', parseInt(e.target.value)); });
+            els.resetRotationBtn.addEventListener('click', () => { if(state.selectedElementId) { els.rotationInput.value = 0; els.rotationValue.innerText = '0°'; updateSelectedElement('rotation', 0); } });
+            els.rotateNegative90Btn.addEventListener('click', () => { if(state.selectedElementId) { els.rotationInput.value = -90; els.rotationValue.innerText = '-90°'; updateSelectedElement('rotation', -90); } });
             
             els.imgSizeInput.addEventListener('input', (e) => { els.imgSizeValue.innerText = e.target.value; updateSelectedElement('width', parseInt(e.target.value)); });
-            els.imgRotationInput.addEventListener('input', (e) => { els.imgRotationValue.innerText = e.target.value + 'Â°'; updateSelectedElement('rotation', parseInt(e.target.value)); });
+            els.imgRotationInput.addEventListener('input', (e) => { els.imgRotationValue.innerText = e.target.value + '°'; updateSelectedElement('rotation', parseInt(e.target.value)); });
             
             els.opacityInput.addEventListener('input', (e) => { const val = e.target.value; els.opacityValue.innerText = Math.round(val * 100) + '%'; updateSelectedStyle('opacity', val); });
             

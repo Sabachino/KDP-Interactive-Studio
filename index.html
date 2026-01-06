@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; background-color: #0F172A; /* Colore di sfondo generale più scuro */ }
         
         .banana-loader {
             width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #FFD700;
@@ -42,7 +42,7 @@
             position: relative;
             overflow: hidden;
             user-select: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6); /* Ombra più profonda */
             transition: all 0.3s ease;
             background-color: #1a202c;
             /* FORZA RIEMPIMENTO COVER */
@@ -50,6 +50,7 @@
             background-position: center !important;
             background-repeat: no-repeat !important;
             margin: 0 auto;
+            border-radius: 8px; /* Arrotondamento canvas interno */
         }
         
         .draggable-item {
@@ -136,10 +137,10 @@
         }
 
         /* Scrollbar Personalizzata per la colonna impostazioni */
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #111827; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; } /* Più sottile */
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6B7280; }
         
         /* Selection Box for Selective Edit */
         #selectionBox {
@@ -227,426 +228,455 @@
             pointer-events: none;
             z-index: 993;
         }
+
+        /* Stile per le card professionali */
+        .pro-card-bg {
+            background-color: rgba(30, 41, 59, 0.7); /* Slate-800 molto trasparente */
+            backdrop-filter: blur(16px); /* Effetto vetro */
+            border: 1px solid rgba(255, 255, 255, 0.08); /* Bordo sottilissimo */
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white h-screen overflow-hidden selection:bg-yellow-500 selection:text-gray-900">
+<body class="text-gray-100 min-h-screen selection:bg-yellow-500 selection:text-gray-900 overflow-hidden flex flex-col">
 
-
-    <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <nav class="bg-gray-900/80 backdrop-blur-md border-b border-white/5 p-4 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-[1800px] mx-auto flex justify-between items-center px-4">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-layer-group text-yellow-400 text-2xl"></i>
-                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
+                <i class="fa-solid fa-layer-group text-yellow-400 text-2xl drop-shadow-lg"></i>
+                <h1 class="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500">KDP Interactive Studio</h1>
             </div>
             <div class="flex items-center gap-4">
-                
-                <div class="text-xs font-mono text-gray-400 bg-gray-700 px-3 py-1 rounded-full">
-                    <i class="fa-solid fa-pen-ruler mr-2"></i>Design Mode
+                <div class="text-xs font-mono text-gray-300 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+                    <i class="fa-solid fa-pen-ruler mr-2 text-yellow-500"></i>Design Mode
                 </div>
-                <button id="resetBtn" type="button" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer" title="Resetta tutto">
+                <button id="resetBtn" type="button" class="bg-red-600/80 hover:bg-red-500 text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border border-red-500/50 hover:shadow-lg hover:shadow-red-900/30">
                     <i class="fa-solid fa-rotate-right"></i> Reset
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 relative items-start h-[calc(100vh-4rem)]">
-
-       <div class="lg:col-span-8 h-full overflow-auto flex items-center justify-center">
-    <!-- canvas / preview -->
-</div>
-
-                    <div>
-                        <label class="text-xs text-gray-200 uppercase font-bold">Tema della Copertina</label>
-                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto per Nano Banana Pro..."></textarea>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-200 uppercase font-bold">Genere (Stile Artistico)</label>
-                        <select id="styleGenre" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none">
-                            <option value="none">Nessuno (usa solo il tema)</option>
-                            <option value="fantasy">Fantasy / Epico</option>
-                            <option value="realistic">Realistico (Fotografico 8K)</option>
-                            <option value="vintage">Vintage (Retrò)</option>
-                            <option value="business">Business (Minimalista)</option>
-                            <option value="cinematic">Cinematico</option>
-                            <option value="narrative">Narrativa</option>
-                        </select>
-                    </div>
-                    
-                    <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg mt-2 transition-all duration-200 transform hover:scale-105 flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Genera
-                    </button>
-                    
-                    <p class="text-xs text-gray-200 text-center">Richiede connessione API attiva.</p>
-
-                    <div id="modificationArea" class="hidden mt-4 pt-4 border-t border-gray-700 animate-fade-in bg-gray-900 rounded p-2">
-                        <label class="text-xs text-yellow-100 uppercase font-bold mb-2 block flex items-center gap-1"><i class="fa-solid fa-paintbrush"></i> Migliora / Modifica Globale</label>
-                        <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2.5 text-sm text-white focus:border-yellow-500 outline-none mb-2" placeholder="Es. Aggiungi più nebbia..."></textarea>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <button type="button" id="modifyArtworkBtn" class="w-full bg-purple-500 hover:bg-purple-400 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg transition-all text-xs flex justify-center items-center gap-2">
-                                <i class="fa-solid fa-wand-sparkles"></i> Applica
-                            </button>
-                            <button type="button" id="undoBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg transition-all text-xs flex justify-center items-center gap-2">
-                                <i class="fa-solid fa-rotate-left"></i> Annulla
-                            </button>
-                        </div>
-
-                          <div class="mt-4 pt-2 border-t border-gray-700">
-                             <label class="text-xs text-yellow-100 uppercase font-bold mb-2 block flex items-center gap-1"><i class="fa-solid fa-eraser"></i> Modifica Selettiva (Inpainting)</label>
-                             <button id="toggleSelectModeBtn" class="w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2">
-                                <i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)
+    <div class="flex-grow flex items-center justify-center py-10 px-4 sm:px-6">
+        <div class="max-w-[1800px] w-full grid grid-cols-1 lg:grid-cols-12 gap-8 h-[85vh]">
+            
+            <div class="lg:col-span-3 h-full flex flex-col rounded-3xl overflow-hidden pro-card-bg shadow-2xl shadow-black/20">
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                
+                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10">
+                        <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-fuchsia-300">
+                            <i class="fa-solid fa-brain"></i> 
+                            <span>1. Generazione AI</span>
+                        </h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Titolo Libro</label>
+                                <input type="text" id="titleInput" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-3 mt-1 text-sm text-white focus:border-fuchsia-500 outline-none font-bold transition-colors" placeholder="Es. Le Avventure di Pinocchio">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Tema della Copertina</label>
+                                <textarea id="mood" rows="3" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-3 mt-1 text-sm text-white focus:border-fuchsia-500 outline-none transition-colors resize-none" placeholder="Descrivi il soggetto..."></textarea>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Stile Artistico</label>
+                                <select id="styleGenre" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-3 mt-1 text-sm text-white focus:border-fuchsia-500 outline-none transition-colors appearance-none">
+                                    <option value="none">Nessuno (usa solo il tema)</option>
+                                    <option value="fantasy">Fantasy / Epico</option>
+                                    <option value="realistic">Realistico (Fotografico 8K)</option>
+                                    <option value="vintage">Vintage (Retrò)</option>
+                                    <option value="business">Business (Minimalista)</option>
+                                    <option value="cinematic">Cinematico</option>
+                                    <option value="narrative">Narrativa</option>
+                                </select>
+                            </div>
+                            
+                            <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-fuchsia-900/30 mt-2 transition-all duration-200 transform hover:scale-[1.02] flex justify-center items-center gap-2 border border-fuchsia-500/30">
+                                <i class="fa-solid fa-wand-magic-sparkles text-lg"></i> GENERA COVER
                             </button>
                             
-                            <div id="selectionControls" class="hidden space-y-2 animate-fade-in">
-                                <p class="text-[10px] text-gray-200">Area definita. Cosa vuoi fare qui?</p>
-                                <textarea id="selectivePrompt" rows="2" class="w-full bg-gray-800 border border-red-500/50 rounded-lg p-2 text-sm text-white focus:border-red-500 outline-none" placeholder="Es. Rimuovi l'albero, Metti un fiore..."></textarea>
-                                <div class="flex gap-2">
-                                    <button id="applySelectiveBtn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-1.5 rounded text-xs font-bold">Esegui Modifica</button>
-                                    <button id="cancelSelectBtn" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-1.5 rounded text-xs">Annulla</button>
+                            <p class="text-[10px] text-gray-500 text-center">Potrebbe richiedere fino a 30 secondi.</p>
+
+                            <div id="modificationArea" class="hidden mt-4 pt-4 border-t border-white/10 animate-fade-in">
+                                <label class="text-xs text-yellow-200 uppercase font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-paintbrush"></i> Migliora / Modifica</label>
+                                <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:border-yellow-500 outline-none mb-2 resize-none" placeholder="Es. Aggiungi più nebbia..."></textarea>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" id="modifyArtworkBtn" class="w-full bg-purple-600/80 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-all text-xs flex justify-center items-center gap-2 border border-purple-500/30">
+                                        <i class="fa-solid fa-wand-sparkles"></i> Applica
+                                    </button>
+                                    <button type="button" id="undoBtn" class="w-full bg-gray-700/80 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-xl shadow-md transition-all text-xs flex justify-center items-center gap-2 border border-white/10">
+                                        <i class="fa-solid fa-rotate-left"></i> Annulla
+                                    </button>
+                                </div>
+
+                                  <div class="mt-4 pt-3 border-t border-white/10">
+                                     <label class="text-xs text-pink-300 uppercase font-bold mb-2 flex items-center gap-2"><i class="fa-solid fa-eraser"></i> Inpainting (Selettivo)</label>
+                                     <button id="toggleSelectModeBtn" class="w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30">
+                                        <i class="fa-regular fa-square"></i> Definisci Area
+                                    </button>
+                                    
+                                    <div id="selectionControls" class="hidden space-y-2 animate-fade-in bg-pink-900/20 p-2 rounded-xl border border-pink-500/20">
+                                        <p class="text-[10px] text-pink-200 text-center">Cosa vuoi fare nell'area selezionata?</p>
+                                        <textarea id="selectivePrompt" rows="2" class="w-full bg-gray-900/50 border border-pink-500/50 rounded-xl p-2 text-sm text-white focus:border-pink-500 outline-none resize-none" placeholder="Es. Rimuovi oggetto..."></textarea>
+                                        <div class="flex gap-2">
+                                            <button id="applySelectiveBtn" class="flex-1 bg-pink-600 hover:bg-pink-500 text-white py-1.5 rounded-lg text-xs font-bold transition-colors">Esegui</button>
+                                            <button id="cancelSelectBtn" class="flex-1 bg-transparent hover:bg-white/10 text-white py-1.5 rounded-lg text-xs border border-white/10 transition-colors">Annulla</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2 pt-2 border-t border-white/10">
+                                <div class="flex items-center gap-3 justify-between">
+                                    <label class="text-[10px] uppercase font-bold flex items-center gap-1 text-purple-300">
+                                        <i class="fa-solid fa-image"></i> Reference (Opz.)
+                                    </label>
+                                    <div class="flex items-center gap-2">
+                                        <label class="cursor-pointer bg-purple-600/50 hover:bg-purple-500/50 px-3 py-1 rounded-lg text-[10px] font-bold shadow-sm transition-all flex items-center gap-1 border border-purple-500/30">
+                                            <i class="fa-solid fa-upload"></i> Carica
+                                            <input type="file" id="styleRefInput" accept="image/*" class="hidden">
+                                        </label>
+                                        <div id="styleRefPreview" class="w-8 h-8 bg-gray-900 rounded-md border border-white/20 hidden overflow-hidden">
+                                            <img id="styleRefImg" class="w-full h-full object-cover">
+                                        </div>
+                                        <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-xs px-1"><i class="fa-solid fa-times"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="mt-4 pt-4 border-t border-gray-700">
-                        <label class="text-xs uppercase font-bold mb-2 block flex items-center gap-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-fuchsia-100">
-                            <i class="fa-solid fa-image text-purple-200"></i> Immagine Campione (Opzionale)
-                        </label>
-                        <div class="flex items-center gap-3">
-                            <label class="cursor-pointer bg-purple-300 hover:bg-purple-200 text-gray-900 px-4 py-2 rounded-lg text-xs font-bold shadow transition-colors flex items-center gap-2">
-                                <i class="fa-solid fa-upload"></i> Carica
-                                <input type="file" id="styleRefInput" accept="image/*" class="hidden">
-                            </label>
-                            <div id="styleRefPreview" class="w-10 h-10 bg-gray-900 rounded border border-gray-600 hidden overflow-hidden">
-                                <img id="styleRefImg" class="w-full h-full object-cover">
+
+                    <div id="designStudio" class="hidden bg-white/5 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-400"><i class="fa-solid fa-font"></i> 2. Personalizzazione</h2>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="addGenericTextBtn" class="bg-gray-700/50 hover:bg-gray-600/50 px-4 py-3 rounded-xl font-bold text-white border border-white/10 shadow-sm transition-all flex items-center justify-center gap-2 hover:border-yellow-500/50">
+                                <i class="fa-solid fa-font text-yellow-400"></i> Aggiungi Testo
+                            </button>
+                            <div class="flex gap-1">
+                                 <button id="addRectBtn" class="flex-1 bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl border border-white/10 flex items-center justify-center shadow-sm transition-all hover:border-orange-400/50"><i class="fa-regular fa-square text-orange-400"></i></button>
+                                 <button id="addCircleBtn" class="flex-1 bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl border border-white/10 flex items-center justify-center shadow-sm transition-all hover:border-orange-400/50"><i class="fa-regular fa-circle text-orange-400"></i></button>
                             </div>
-                            <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-xs"><i class="fa-solid fa-times"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="designStudio" class="hidden bg-gray-800 p-6 rounded-xl border border-gray-700 border-l-4 border-l-yellow-500 space-y-4">
-                <h2 class="text-lg font-semibold text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-font"></i> 2. Personalizzazione</h2>
-                
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="addGenericTextBtn" class="bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg font-bold text-white border border-gray-500 shadow-md transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-font text-yellow-400"></i> Testo
-                    </button>
-                    <div class="flex gap-1">
-                         <button id="addRectBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md"><i class="fa-regular fa-square text-orange-400"></i></button>
-                         <button id="addCircleBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md"><i class="fa-regular fa-circle text-orange-400"></i></button>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-3 gap-1 mt-2">
-                    <button id="addFlagBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-2" title="Aggiungi Flag/Banner">
-                        <i class="fa-solid fa-bookmark text-green-400 mr-1"></i> Flag
-                    </button>
-                    <button id="addBulletBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-2" title="Aggiungi Elenco">
-                        <i class="fa-solid fa-list-ul text-blue-400 mr-1"></i> Elenco
-                    </button>
-                    <button id="addBadgeBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-2" title="Aggiungi Bollino">
-                        <i class="fa-solid fa-certificate text-orange-400 mr-1"></i> Bollino
-                    </button>
-                </div>
-                
-                <hr class="border-gray-700 my-2">
-
-                <div id="textInspector" class="hidden space-y-4 animate-fade-in bg-gray-900/50 p-4 rounded-lg border border-gray-600">
-                    <div class="flex justify-between items-center mb-2">
-                        <p class="text-xs text-yellow-500 font-bold uppercase"><i class="fa-solid fa-sliders mr-1"></i> Modifica Elemento</p>
-                        <button id="aiStyleBtn" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-[10px] px-2 py-1 rounded shadow flex items-center gap-1"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Style</button>
-                    </div>
-                    
-                    <div id="textSpecificControls" class="hidden">
-                        <div class="mb-3">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">Contenuto</label>
-                            <input type="text" id="selectedTextInput" class="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white focus:border-yellow-500 outline-none">
-                        </div>
-                        <div class="mb-3">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">Font</label>
-                            <select id="fontSelector" class="w-full bg-gray-800 border border-gray-600 rounded p-1 text-sm mt-1 text-white">
-                                <optgroup label="Serif (Eleganti)"><option value="'Cinzel', serif">Cinzel</option><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Libre Baskerville', serif">Libre Baskerville</option><option value="'Bodoni Moda', serif">Bodoni Moda</option><option value="'Cormorant Garamond', serif">Cormorant</option></optgroup>
-                                <optgroup label="Sans Serif (Moderni)"><option value="'Inter', sans-serif">Inter</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Raleway', sans-serif">Raleway</option></optgroup>
-                                <optgroup label="Display & Horror"><option value="'Bebas Neue', cursive">Bebas Neue</option><option value="'Anton', sans-serif">Anton</option><option value="'Abril Fatface', cursive">Abril Fatface</option><option value="'Creepster', cursive">Creepster</option><option value="'Nosifer', cursive">Nosifer</option><option value="'Rye', serif">Rye</option></optgroup>
-                                <optgroup label="Script"><option value="'Great Vibes', cursive">Great Vibes</option><option value="'Dancing Script', cursive">Dancing Script</option><option value="'Pacifico', cursive">Pacifico</option></optgroup>
-                            </select>
                         </div>
                         
-                        <div class="grid grid-cols-4 gap-2 mb-3">
-                             <div class="col-span-2">
-                                 <label class="text-[10px] text-gray-200 uppercase font-bold">Stile</label>
-                                 <div class="flex gap-1 mt-1">
-                                     <button id="boldBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-xs text-white" title="Grassetto"><i class="fa-solid fa-bold"></i></button>
-                                     <button id="italicBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-xs text-white" title="Corsivo"><i class="fa-solid fa-italic"></i></button>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button id="addFlagBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl border border-white/10 flex items-center justify-center shadow-sm py-2 transition-all hover:border-green-400/50" title="Aggiungi Flag">
+                                <i class="fa-solid fa-bookmark text-green-400 mr-1"></i> Flag
+                            </button>
+                            <button id="addBulletBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl border border-white/10 flex items-center justify-center shadow-sm py-2 transition-all hover:border-blue-400/50" title="Aggiungi Elenco">
+                                <i class="fa-solid fa-list-ul text-blue-400 mr-1"></i> Elenco
+                            </button>
+                            <button id="addBadgeBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white rounded-xl border border-white/10 flex items-center justify-center shadow-sm py-2 transition-all hover:border-orange-400/50" title="Aggiungi Bollino">
+                                <i class="fa-solid fa-certificate text-orange-400 mr-1"></i> Badge
+                            </button>
+                        </div>
+                        
+                        <hr class="border-white/10 my-2">
+
+                        <div id="textInspector" class="hidden space-y-4 animate-fade-in bg-black/20 p-4 rounded-xl border border-white/10">
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="text-xs text-yellow-500 font-bold uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1"></i> Modifica Elemento</p>
+                                <button id="aiStyleBtn" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-[10px] px-2 py-1 rounded-lg shadow-sm flex items-center gap-1 font-bold border border-white/10"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Style</button>
+                            </div>
+                            
+                            <div id="textSpecificControls" class="hidden">
+                                <div class="mb-3">
+                                    <input type="text" id="selectedTextInput" class="w-full bg-gray-900/50 border border-white/10 rounded-lg p-2 text-sm text-white focus:border-yellow-500 outline-none font-medium">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Font</label>
+                                    <select id="fontSelector" class="w-full bg-gray-900/50 border border-white/10 rounded-lg p-1.5 text-sm mt-1 text-white outline-none">
+                                        <optgroup label="Serif (Eleganti)"><option value="'Cinzel', serif">Cinzel</option><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Libre Baskerville', serif">Libre Baskerville</option><option value="'Bodoni Moda', serif">Bodoni Moda</option><option value="'Cormorant Garamond', serif">Cormorant</option></optgroup>
+                                        <optgroup label="Sans Serif (Moderni)"><option value="'Inter', sans-serif">Inter</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Raleway', sans-serif">Raleway</option></optgroup>
+                                        <optgroup label="Display & Horror"><option value="'Bebas Neue', cursive">Bebas Neue</option><option value="'Anton', sans-serif">Anton</option><option value="'Abril Fatface', cursive">Abril Fatface</option><option value="'Creepster', cursive">Creepster</option><option value="'Nosifer', cursive">Nosifer</option><option value="'Rye', serif">Rye</option></optgroup>
+                                        <optgroup label="Script"><option value="'Great Vibes', cursive">Great Vibes</option><option value="'Dancing Script', cursive">Dancing Script</option><option value="'Pacifico', cursive">Pacifico</option></optgroup>
+                                    </select>
+                                </div>
+                                
+                                <div class="grid grid-cols-4 gap-2 mb-3">
+                                     <div class="col-span-2">
+                                         <label class="text-[10px] text-gray-400 uppercase font-bold">Stile</label>
+                                         <div class="flex gap-1 mt-1">
+                                             <button id="boldBtn" class="style-btn flex-1 bg-gray-700/50 border border-white/10 rounded-lg p-1.5 hover:bg-gray-600/50 text-xs text-white transition-all" title="Grassetto"><i class="fa-solid fa-bold"></i></button>
+                                             <button id="italicBtn" class="style-btn flex-1 bg-gray-700/50 border border-white/10 rounded-lg p-1.5 hover:bg-gray-600/50 text-xs text-white transition-all" title="Corsivo"><i class="fa-solid fa-italic"></i></button>
+                                         </div>
+                                     </div>
+                                     <div class="col-span-2">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Allineamento</label>
+                                        <div class="flex gap-1 mt-1">
+                                            <button id="alignLeftBtn" class="style-btn flex-1 bg-gray-700/50 border border-white/10 rounded-lg p-1.5 hover:bg-gray-600/50 text-xs text-white transition-all" title="Sinistra"><i class="fa-solid fa-align-left"></i></button>
+                                            <button id="alignCenterBtn" class="style-btn flex-1 bg-gray-700/50 border border-white/10 rounded-lg p-1.5 hover:bg-gray-600/50 text-xs text-white transition-all" title="Centro"><i class="fa-solid fa-align-center"></i></button>
+                                            <button id="alignRightBtn" class="style-btn flex-1 bg-gray-700/50 border border-white/10 rounded-lg p-1.5 hover:bg-gray-600/50 text-xs text-white transition-all" title="Destra"><i class="fa-solid fa-align-right"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="shapeSpecificControls" class="hidden">
+                                <div class="mb-3">
+                                     <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Larghezza</label>
+                                        <span id="shapeWidthDisplay" class="text-[10px] text-gray-400 font-mono">100px</span>
+                                     </div>
+                                     <input type="range" id="shapeWidthInput" min="10" max="500" step="5" value="100" class="w-full accent-yellow-500">
+                                </div>
+                                <div class="mb-3">
+                                     <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Altezza</label>
+                                        <span id="shapeHeightDisplay" class="text-[10px] text-gray-400 font-mono">100px</span>
+                                     </div>
+                                     <input type="range" id="shapeHeightInput" min="10" max="500" step="5" value="100" class="w-full accent-yellow-500">
+                                </div>
+                                <div class="mb-3" id="borderRadiusControl">
+                                     <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Arrotondamento</label>
+                                        <span id="shapeRadiusDisplay" class="text-[10px] text-gray-400 font-mono">0px</span>
+                                     </div>
+                                     <input type="range" id="shapeRadiusInput" min="0" max="100" step="1" value="0" class="w-full accent-yellow-500">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                 <div class="flex items-center justify-between mb-1 p-2 bg-white/5 rounded-lg border border-white/10">
+                                    <label class="text-[10px] text-gray-300 uppercase font-bold">Colore</label>
+                                    <input type="color" id="colorPicker" class="w-8 h-8 rounded-md cursor-pointer bg-transparent border-0 p-0" value="#ffffff">
                                  </div>
-                             </div>
-                             <div class="col-span-2">
-                                <label class="text-[10px] text-gray-200 uppercase font-bold">Allineamento</label>
-                                <div class="flex gap-1 mt-1">
-                                    <button id="alignLeftBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-xs text-white" title="Sinistra"><i class="fa-solid fa-align-left"></i></button>
-                                    <button id="alignCenterBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-xs text-white" title="Centro"><i class="fa-solid fa-align-center"></i></button>
-                                    <button id="alignRightBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-xs text-white" title="Destra"><i class="fa-solid fa-align-right"></i></button>
+                            </div>
+                            
+                            <div id="opacityControl" class="mb-3 hidden">
+                                 <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Opacità</label>
+                                    <span id="opacityValue" class="text-[10px] text-gray-400 font-mono">100%</span>
+                                 </div>
+                                 <input type="range" id="opacityInput" min="0" max="1" step="0.1" value="1" class="w-full accent-yellow-500">
+                            </div>
+
+                            <div id="textSizeControl" class="mb-3 hidden">
+                                 <div class="flex items-center justify-between mb-1">
+                                    <label class="text-[10px] text-gray-400 uppercase font-bold">Dimensione</label>
+                                    <span id="sizeValueDisplay" class="text-[10px] text-gray-400 font-mono">30px</span>
+                                 </div>
+                                 <input type="range" id="sizeInput" min="5" max="200" step="1" value="30" class="w-full accent-yellow-500">
+                            </div>
+
+                            <div id="textSpacingControl" class="mb-3 hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-400 uppercase font-bold">Spaziatura</label><span id="spacingValue" class="text-[10px] text-gray-400 font-mono">0px</span></div><input type="range" id="spacingInput" min="-10" max="50" step="0.5" value="0" class="w-full accent-yellow-500"></div>
+                            
+                            <div class="space-y-3 pt-3 border-t border-white/10">
+                                <div id="textStrokeControl" class="hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-400 uppercase font-bold">Contorno</label><input type="color" id="strokeColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="strokeWidthInput" min="0" max="5" step="0.1" value="0" class="w-full accent-red-500"></div>
+                                
+                                <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-400 uppercase font-bold">Ombra Colore</label><input type="color" id="shadowColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="shadowBlurInput" min="0" max="20" step="0.5" value="0" class="w-full accent-purple-500"></div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-400 uppercase font-bold">Offset</label><span id="offsetValue" class="text-[10px] text-gray-400 font-mono">2px</span></div><input type="range" id="shadowOffsetInput" min="0" max="50" step="0.5" value="2" class="w-full accent-purple-500"></div>
+                                    <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-400 uppercase font-bold">Angolo</label><span id="angleValue" class="text-[10px] text-gray-400 font-mono">45°</span></div><input type="range" id="shadowAngleInput" min="0" max="360" step="15" value="45" class="w-full accent-purple-500"></div>
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center justify-between mb-1 mt-2">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Rotazione</label>
+                                        <div class="flex items-center gap-1">
+                                            <span id="rotationValue" class="text-[10px] text-gray-400 w-8 text-right mr-1 font-mono">0°</span>
+                                            <button id="resetRotationBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white px-2 py-1 rounded text-[10px] border border-white/10" title="Orizzontale (0°)">0°</button>
+                                            <button id="rotateNegative90Btn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white px-2 py-1 rounded text-[10px] border border-white/10" title="Verticale Spina (-90°)">-90°</button>
+                                        </div>
+                                    </div>
+                                    <input type="range" id="rotationInput" min="-180" max="180" step="1" value="0" class="w-full accent-blue-500">
+                                </div>
+                                
+                                <button id="centerElementBtn" class="w-full mt-2 bg-gradient-to-r from-yellow-500/80 to-orange-400/80 hover:from-yellow-400/80 hover:to-orange-300/80 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold border border-yellow-500/30">
+                                    <i class="fa-solid fa-align-center"></i> Centra Orizzontalmente
+                                </button>
+                                
+                            </div>
+                            <button id="deleteElementBtn" class="w-full mt-4 bg-red-900/30 hover:bg-red-800/40 text-red-300 text-xs py-2.5 rounded-xl border border-red-500/30 transition-all font-bold flex items-center justify-center gap-2"><i class="fa-solid fa-trash"></i> Elimina Elemento</button>
+                        </div>
+                        
+                        <div id="inspectorPlaceholder" class="text-center py-8 text-gray-500/70 text-sm italic border-2 border-dashed border-white/10 rounded-2xl">Seleziona un elemento per modificarlo</div>
+                    </div>
+
+                     <div id="exportSection" class="hidden bg-white/5 p-5 rounded-2xl border border-white/10">
+                        <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-green-400">
+                            <i class="fa-solid fa-file-export"></i> 
+                            <span>3. Esporta Digitale</span>
+                        </h2>
+                        <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-green-900/20 flex items-center justify-center gap-2 transition-all duration-200 transform hover:scale-[1.02] border border-green-500/30">
+                            <i class="fa-brands fa-amazon text-xl"></i> Scarica Kindle HD
+                        </button>
+                     </div>
+
+                    <div id="printSection" class="hidden bg-white/5 p-5 rounded-2xl border border-white/10 space-y-4">
+                        <h2 class="text-lg font-bold flex items-center gap-2 text-orange-400">
+                            <i class="fa-solid fa-print"></i> 
+                            <span>4. Formato Paperback (KDP)</span>
+                        </h2>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                              <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Trim Size</label>
+                                <select id="trimSizeInput" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-2.5 text-sm text-white focus:border-orange-500 outline-none mt-1">
+                                    <option value="5x8">5" x 8"</option>
+                                    <option value="6x9">6" x 9"</option>
+                                    <option value="8.5x11" selected>8.5" x 11"</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Pagine</label>
+                                <input type="number" id="pageCountInput" value="100" min="24" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-2.5 text-sm text-white focus:border-orange-500 outline-none mt-1 font-bold">
+                              </div>
+                        </div>
+
+                        <div>
+                              <label class="text-[10px] text-gray-400 uppercase font-bold">Tipo Carta</label>
+                              <select id="paperTypeInput" class="w-full bg-gray-900/50 border border-white/10 rounded-xl p-2.5 text-sm text-white focus:border-orange-500 outline-none mt-1">
+                                  <option value="white">Carta Bianca (Standard)</option>
+                                  <option value="cream">Carta Crema (Cream)</option>
+                                  <option value="color">A Colori (Premium)</option>
+                              </select>
+                              <p class="text-[9px] text-gray-500 mt-1">*Determina lo spessore esatto del dorso.</p>
+                        </div>
+                        
+                        <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 text-sm mb-4 transition-all duration-200 transform hover:scale-[1.02] border border-orange-500/30">
+                            <i class="fa-solid fa-pen-ruler text-lg"></i> Crea Layout KDP
+                        </button>
+
+                        <div class="mb-2">
+                            <label class="cursor-pointer w-full bg-gray-700/50 hover:bg-gray-600/50 text-white font-bold py-2.5 px-4 rounded-xl shadow-sm flex items-center justify-center gap-2 text-xs transition-all border border-white/10 hover:border-yellow-500/50">
+                                <i class="fa-solid fa-upload"></i> Importa Fronte (Opz.)
+                                <input type="file" id="importFrontInput" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold mb-1 block">Colore Spina</label>
+                                <div class="flex gap-2 items-center p-1 bg-gray-900/50 rounded-xl border border-white/10">
+                                    <input type="color" id="spineColorInput" class="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 bg-transparent" value="#F59E0B">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 uppercase font-bold mb-1 block">Colore Retro</label>
+                                <div class="flex gap-2 items-center p-1 bg-gray-900/50 rounded-xl border border-white/10">
+                                    <input type="color" id="backColorInput" class="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 bg-transparent" value="#1a202c">
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="shapeSpecificControls" class="hidden">
-                        <div class="mb-3">
-                             <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-200 uppercase font-bold">Larghezza</label>
-                                <span id="shapeWidthDisplay" class="text-[10px] text-gray-200">100px</span>
-                             </div>
-                             <input type="range" id="shapeWidthInput" min="10" max="500" step="5" value="100" class="w-full">
+                        <div class="p-4 bg-black/20 rounded-xl border border-white/10 text-xs text-gray-400 space-y-2">
+                            <div class="flex justify-between"><span>Spessore Dorso:</span> <span id="spineWidthDisplay" class="text-white font-bold font-mono">0.23"</span></div>
+                            <div class="flex justify-between"><span>Ris. Totale:</span> <span id="totalResDisplay" class="text-white font-bold font-mono">-</span></div>
+                            
+                            <div class="flex justify-between items-center pt-3 border-t border-white/10">
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-barcode"></i> Barcode</span>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggleBarcode" class="sr-only peer">
+                                    <div class="relative w-9 h-5 bg-gray-700/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="flex items-center gap-1"><i class="fa-solid fa-ruler-combined"></i> Guide KDP</span>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="toggleGuides" class="sr-only peer">
+                                    <div class="relative w-9 h-5 bg-gray-700/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                                </label>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                             <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-200 uppercase font-bold">Altezza</label>
-                                <span id="shapeHeightDisplay" class="text-[10px] text-gray-200">100px</span>
-                             </div>
-                             <input type="range" id="shapeHeightInput" min="10" max="500" step="5" value="100" class="w-full">
+
+                        <div id="spineTools" class="hidden space-y-3 pt-4 border-t border-white/10">
+                            <p class="text-[10px] text-orange-300 font-bold uppercase">Testo Spina</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="spineTextInput" class="flex-1 bg-gray-900/50 border border-white/10 rounded-xl text-sm text-white px-3 py-2 outline-none" placeholder="Titolo...">
+                                <button id="addSpineTextBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white py-2 px-4 rounded-xl text-xs border border-white/10 transition-all">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <button id="centerSpineTextBtn" class="w-full bg-gray-700/30 hover:bg-gray-600/30 text-orange-200 py-2 rounded-xl text-xs border border-orange-500/20 transition-all font-bold">
+                                <i class="fa-solid fa-arrows-left-right-to-line mr-1"></i> Centra nella Spina
+                            </button>
+                            
+                            <p class="text-[10px] text-orange-300 font-bold uppercase mt-4">Testo Retro</p>
+                            <div class="flex gap-2">
+                                <input type="text" id="backTextInput" class="flex-1 bg-gray-900/50 border border-white/10 rounded-xl text-sm text-white px-3 py-2 outline-none" placeholder="Sinossi...">
+                                <button id="addBackTextBtn" class="bg-gray-700/50 hover:bg-gray-600/50 text-white py-2 px-4 rounded-xl text-xs border border-white/10 transition-all">
+                                    <i class="fa-solid fa-plus"></i>
+                                </button>
+                            </div>
+                            <button id="centerBackTextBtn" class="w-full bg-gray-700/30 hover:bg-gray-600/30 text-orange-200 py-2 rounded-xl text-xs border border-orange-500/20 transition-all font-bold">
+                                <i class="fa-solid fa-arrows-left-right-to-line mr-1"></i> Centra nel Retro
+                            </button>
                         </div>
-                        <div class="mb-3" id="borderRadiusControl">
-                             <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-200 uppercase font-bold">Arrotondamento</label>
-                                <span id="shapeRadiusDisplay" class="text-[10px] text-gray-200">0px</span>
-                             </div>
-                             <input type="range" id="shapeRadiusInput" min="0" max="100" step="1" value="0" class="w-full">
-                        </div>
-                    </div>
 
-                    <div class="mb-3">
-                         <div class="flex items-center justify-between mb-1">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">Colore</label>
-                            <input type="color" id="colorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#ffffff">
-                         </div>
-                    </div>
-                    
-                    <div id="opacityControl" class="mb-3 hidden">
-                         <div class="flex items-center justify-between mb-1">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">Opacità</label>
-                            <span id="opacityValue" class="text-[10px] text-gray-200">100%</span>
-                         </div>
-                         <input type="range" id="opacityInput" min="0" max="1" step="0.1" value="1" class="w-full">
-                    </div>
+                        <div id="paperbackTools" class="hidden space-y-2 pt-4 border-t border-white/10">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Extra</p>
+                            <div class="grid grid-cols-1 gap-2">
+                                <label class="cursor-pointer bg-gray-700/50 hover:bg-gray-600/50 text-white py-2.5 rounded-xl text-xs flex items-center justify-center border border-white/10 transition-all hover:border-orange-400/50 font-bold">
+                                    <i class="fa-solid fa-image mr-2"></i> Immagine Retro
+                                    <input type="file" id="addBackImageInput" accept="image/*" class="hidden">
+                                </label>
+                            </div>
 
-                    <div id="textSizeControl" class="mb-3 hidden">
-                         <div class="flex items-center justify-between mb-1">
-                            <label class="text-[10px] text-gray-200 uppercase font-bold">Dimensione Testo</label>
-                            <span id="sizeValueDisplay" class="text-[10px] text-gray-200">30px</span>
-                         </div>
-                         <input type="range" id="sizeInput" min="5" max="200" step="1" value="30" class="w-full">
-                    </div>
-
-                    <div id="textSpacingControl" class="mb-3 hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Spaziatura</label><span id="spacingValue" class="text-[10px] text-gray-200">0px</span></div><input type="range" id="spacingInput" min="-10" max="50" step="0.5" value="0" class="w-full"></div>
-                    
-                    <div class="space-y-3 pt-2 border-t border-gray-700">
-                        <div id="textStrokeControl" class="hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Contorno</label><input type="color" id="strokeColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="strokeWidthInput" min="0" max="5" step="0.1" value="0" class="w-full"></div>
-                        
-                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Ombra</label><input type="color" id="shadowColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="shadowBlurInput" min="0" max="20" step="0.5" value="0" class="w-full"></div>
-                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Offset</label><span id="offsetValue" class="text-[10px] text-gray-200">2px</span></div><input type="range" id="shadowOffsetInput" min="0" max="50" step="0.5" value="2" class="w-full"></div>
-                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Angolatura</label><span id="angleValue" class="text-[10px] text-gray-200">45°</span></div><input type="range" id="shadowAngleInput" min="0" max="360" step="15" value="45" class="w-full"></div>
-                        
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-200 uppercase font-bold">Rotazione</label>
-                                <div class="flex items-center gap-1">
-                                    <span id="rotationValue" class="text-[10px] text-gray-200 w-8 text-right mr-1">0°</span>
-                                    <button id="resetRotationBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Orizzontale (0°)">0°</button>
-                                    <button id="rotateNegative90Btn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Verticale Spina (-90°)">-90°</button>
+                            <div id="imageInspector" class="hidden space-y-3 bg-black/20 p-4 rounded-xl border border-white/10 mt-3 animate-fade-in">
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-[10px] text-yellow-500 font-bold uppercase"><i class="fa-solid fa-image mr-1"></i> Modifica Immagine</p>
                                 </div>
+                                
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Dimensione</label>
+                                        <span id="imgSizeValue" class="text-[10px] text-gray-500 font-mono">150</span>
+                                    </div>
+                                    <input type="range" id="imgSizeInput" min="10" max="800" step="5" value="150" class="w-full accent-yellow-500">
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center justify-between mb-1">
+                                        <label class="text-[10px] text-gray-400 uppercase font-bold">Rotazione</label>
+                                        <span id="imgRotationValue" class="text-[10px] text-gray-500 font-mono">0°</span>
+                                    </div>
+                                    <input type="range" id="imgRotationInput" min="-180" max="180" step="1" value="0" class="w-full accent-blue-500">
+                                </div>
+
+                                <button id="deleteImageBtn" class="w-full mt-2 bg-red-900/30 hover:bg-red-800/40 text-red-300 text-[10px] py-2 rounded-lg border border-red-500/30 transition-all font-bold flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-trash"></i> Elimina
+                                </button>
                             </div>
-                            <input type="range" id="rotationInput" min="-180" max="180" step="1" value="0" class="w-full">
+
                         </div>
                         
-                        <button id="centerElementBtn" class="w-full mt-2 bg-gradient-to-r from-yellow-400 to-orange-300 hover:from-yellow-300 hover:to-orange-200 text-gray-900 text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold">
-                            <i class="fa-solid fa-align-center"></i> Centra Orizzontalmente
+                        <button id="downloadPrintBtn" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 text-sm mt-4 hidden transition-all duration-200 transform hover:scale-[1.02] border border-red-500/30">
+                            <i class="fa-solid fa-download text-lg"></i> Scarica JPG Stampa (300DPI)
                         </button>
-                        
                     </div>
-                    <button id="deleteElementBtn" class="w-full mt-4 bg-red-900/50 hover:bg-red-900 text-red-200 text-xs py-2 rounded border border-red-800 transition-colors"><i class="fa-solid fa-trash"></i> Elimina Elemento</button>
                 </div>
-                
-                <div id="inspectorPlaceholder" class="text-center py-6 text-gray-500 text-sm italic border border-dashed border-gray-700 rounded">Seleziona un testo o aggiungine uno vuoto per iniziare</div>
             </div>
 
-             <div id="exportSection" class="hidden bg-gray-800 p-6 rounded-xl border border-gray-700 border-l-4 border-l-green-500">
-                <h2 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-file-export text-green-500"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600">3. Esporta</span>
-                </h2>
-                <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 transform hover:scale-105">
-                    <i class="fa-brands fa-amazon"></i> Scarica Cover Kindle HD
-                </button>
-             </div>
-
-            <div id="printSection" class="hidden bg-gray-800 p-6 rounded-xl border border-gray-700 border-l-4 border-l-orange-500 space-y-4">
-                <h2 class="text-lg font-semibold flex items-center gap-2">
-                    <i class="fa-solid fa-print text-orange-400"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">4. Formato Paperback (KDP)</span>
-                </h2>
-                
-                <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Trim Size</label>
-                        <select id="trimSizeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white focus:border-orange-500 outline-none">
-                            <option value="5x8">5" x 8"</option>
-                            <option value="6x9">6" x 9"</option>
-                            <option value="8.5x11" selected>8.5" x 11"</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Pagine</label>
-                        <input type="number" id="pageCountInput" value="100" min="24" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white focus:border-orange-500 outline-none">
-                      </div>
-                </div>
-
-                <div>
-                      <label class="text-xs text-gray-400 uppercase font-bold">Tipo Carta (Spessore)</label>
-                      <select id="paperTypeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-2 text-sm text-white focus:border-orange-500 outline-none">
-                          <option value="white">Carta Bianca (Standard)</option>
-                          <option value="cream">Carta Crema (Cream)</option>
-                          <option value="color">A Colori (Premium)</option>
-                      </select>
-                      <p class="text-[10px] text-gray-500 mt-1">*Determina lo spessore esatto del dorso per KDP.</p>
-                </div>
-                
-                <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-shadow-black font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mb-4 transition-all duration-200 transform hover:scale-105">
-                    <i class="fa-solid fa-pen-ruler"></i> Crea Layout KDP
-                </button>
-
-                <div class="mb-2">
-                    <label class="cursor-pointer w-full bg-gradient-to-r from-yellow-200 to-yellow-400 hover:from-yellow-100 hover:to-yellow-300 text-gray-900 font-bold py-2 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-xs transition-colors">
-                        <i class="fa-solid fa-upload"></i> Importa Cover Fronte (Opzionale)
-                        <input type="file" id="importFrontInput" accept="image/*" class="hidden">
-                    </label>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Colore Spina</label>
-                        <div class="flex gap-2">
-                            <input type="color" id="spineColorInput" class="w-full h-8 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#F59E0B">
-                        </div>
+            <div class="lg:col-span-9 h-full flex flex-col">
+                <div id="previewContainer" class="pro-card-bg rounded-3xl shadow-2xl shadow-black/30 border border-white/10 h-full flex flex-col items-center justify-center relative overflow-hidden p-8 transition-all">
+                    <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-md">
+                        <div class="banana-loader mb-6"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse text-lg font-bold">la tua cover è in arrivo..........</p>
                     </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold mb-1 block">Colore Retro</label>
-                        <div class="flex gap-2">
-                            <input type="color" id="backColorInput" class="w-full h-8 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#1a202c">
+                    <div id="placeholder" class="text-gray-500 text-center flex flex-col items-center">
+                        <div class="bg-white/5 p-8 rounded-full mb-6 border border-white/10 shadow-inner">
+                            <i class="fa-solid fa-palette text-7xl opacity-30 text-yellow-200"></i>
                         </div>
+                        <h3 class="text-2xl font-bold text-gray-300 mb-2">Il tuo Studio Creativo</h3>
+                        <p class="text-gray-400">Configura lo stile a sinistra e genera la tua base.</p>
                     </div>
-                </div>
-
-                <div class="p-3 bg-gray-900 rounded border border-orange-200 text-xs text-gray-400">
-                    <div class="flex justify-between mb-1"><span>Spessore Dorso:</span> <span id="spineWidthDisplay" class="text-white font-bold">0.23"</span></div>
-                    <div class="flex justify-between mb-1"><span>Totale (px):</span> <span id="totalResDisplay" class="text-white font-bold">-</span></div>
+                    <div id="interactiveArea" class="hidden shadow-2xl relative bg-black/50 rounded-xl overflow-hidden ring-1 ring-white/10">
+                        <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
+                        <div id="selectionBox" style="display:none;"></div>
+                    </div>
+                    <div id="barcodeArea" class="hidden flex flex-col items-center justify-center rounded-sm overflow-hidden">
+                        <div id="barcodeLines"></div>
+                        <div id="barcodeText">ISBN 978-0-00-000000-0</div>
+                    </div>
                     
-                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-gray-700">
-                        <span>Mostra Barcode</span>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggleBarcode" class="sr-only peer">
-                            <div class="relative w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
-                        </label>
-                    </div>
-                    <div class="flex justify-between items-center mt-2">
-                        <span>Guide Layout KDP</span>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="toggleGuides" class="sr-only peer">
-                            <div class="relative w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
-                        </label>
-                    </div>
-                </div>
-
-                <div id="spineTools" class="hidden space-y-2 pt-4 border-t border-gray-700">
-                    <p class="text-[10px] text-orange-200 font-bold uppercase mb-2">TESTO SPINA:</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="spineTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-sm text-white px-2" placeholder="">
-                        <button id="addSpineTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-3 rounded text-xs">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
-                    </div>
-                    <button id="centerSpineTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-1 rounded text-xs mt-1">
-                        <i class="fa-solid fa-arrows-left-right-to-line"></i> Centra nella Spina
-                    </button>
+                    <div id="canvasDimensionsDisplay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 mt-4 text-xs text-orange-300 font-mono text-center hidden py-1.5 px-4 bg-black/60 backdrop-blur-sm rounded-full border border-orange-500/30 shadow-lg"></div>
                     
-                    <p class="text-[10px] text-orange-200 font-bold uppercase mb-2 mt-4">TESTO RETRO:</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="backTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-sm text-white px-2" placeholder="">
-                        <button id="addBackTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-3 rounded text-xs">
-                            <i class="fa-solid fa-plus"></i>
-                        </button>
+                    <div id="canvasInfo" class="absolute top-4 left-1/2 transform -translate-x-1/2 hidden mt-2 text-xs text-gray-300 flex items-center gap-2 bg-black/40 backdrop-blur-sm py-1.5 px-4 rounded-full border border-white/10">
+                        <i class="fa-solid fa-mouse-pointer text-yellow-400 animate-bounce"></i><span>Trascina gli elementi. Usa il pannello a sinistra per modificare.</span>
                     </div>
-                    <button id="centerBackTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-1 rounded text-xs mt-1">
-                        <i class="fa-solid fa-arrows-left-right-to-line"></i> Centra nel Retro
-                    </button>
                 </div>
-
-                <div id="paperbackTools" class="hidden space-y-2 pt-4 border-t border-gray-700">
-                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Aggiungi al Layout:</p>
-                    <div class="grid grid-cols-1 gap-2">
-                        <label class="cursor-pointer bg-orange-200 hover:bg-orange-300 text-gray-900 py-2 rounded text-xs flex items-center justify-center border border-gray-600">
-                            <i class="fa-solid fa-image mr-1"></i> Immagine Extra (Retro)
-                            <input type="file" id="addBackImageInput" accept="image/*" class="hidden">
-                        </label>
-                    </div>
-
-                    <div id="imageInspector" class="hidden space-y-3 bg-gray-900/50 p-3 rounded border border-gray-600 mt-2">
-                        <div class="flex justify-between items-center mb-1">
-                            <p class="text-[10px] text-yellow-500 font-bold uppercase"><i class="fa-solid fa-image"></i> Modifica Immagine</p>
-                        </div>
-                        
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-400 uppercase font-bold">Dimensione</label>
-                                <span id="imgSizeValue" class="text-[10px] text-gray-500">150</span>
-                            </div>
-                            <input type="range" id="imgSizeInput" min="10" max="800" step="5" value="150" class="w-full">
-                        </div>
-
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="text-[10px] text-gray-400 uppercase font-bold">Rotazione</label>
-                                <span id="imgRotationValue" class="text-[10px] text-gray-500">0°</span>
-                            </div>
-                            <input type="range" id="imgRotationInput" min="-180" max="180" step="1" value="0" class="w-full">
-                        </div>
-
-                        <button id="deleteImageBtn" class="w-full mt-1 bg-red-900/50 hover:bg-red-900 text-red-200 text-[10px] py-1.5 rounded border border-red-800 transition-colors">
-                            <i class="fa-solid fa-trash"></i> Elimina
-                        </button>
-                    </div>
-
-                </div>
-                
-                <button id="downloadPrintBtn" class="w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-400 hover:to-orange-300 text-white text-shadow-strong font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mt-4 hidden transition-all duration-200 transform hover:scale-105">
-                    <i class="fa-solid fa-download"></i> Scarica JPG Stampa (300DPI)
-                </button>
+                <canvas id="exportCanvas" class="hidden"></canvas>
             </div>
-        </div>
-
-        <div class="lg:col-span-8 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 min-h-[600px] flex flex-col items-center justify-center relative overflow-hidden p-8">
-                <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
-                </div>
-                <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
-                <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
-                    <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
-                    <div id="selectionBox" style="display:none;"></div>
-                </div>
-                <div id="barcodeArea" class="hidden flex flex-col items-center justify-center">
-                    <div id="barcodeLines"></div>
-                    <div id="barcodeText">ISBN 978-0-00-000000-0</div>
-                </div>
-                
-                <div id="canvasDimensionsDisplay" class="mt-4 text-xs text-orange-200 font-mono text-center hidden p-2 bg-gray-900/50 rounded border border-gray-700"></div>
-                
-                <div id="canvasInfo" class="hidden mt-2 text-xs text-gray-400 flex items-center gap-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi. Usa il pannello a sinistra per personalizzarli.</span></div>
-            </div>
-            <canvas id="exportCanvas" class="hidden"></canvas>
         </div>
     </div>
 
@@ -869,8 +899,8 @@
                  
                  // 6. Reset Bottone Selezione
                  if(els.toggleSelectModeBtn) {
-                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
-                    els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
                  }
             }
 
@@ -956,8 +986,8 @@
                 state.isSelectingArea = false;
                 els.selectionBox.style.display = 'none';
                 els.selectionControls.classList.add('hidden');
-                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
 
                 els.interactiveArea.style.width = '400px';
                 els.interactiveArea.style.height = '517.65px'; 
@@ -992,8 +1022,8 @@
                 state.isSelectingArea = false;
                 els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
-                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                els.toggleSelectModeBtn.className = 'w-full bg-pink-600/80 hover:bg-pink-500 text-white text-xs py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 font-bold mb-2 border border-pink-500/30';
 
                 const calc = updatePrintCalculations();
                 const ratio = calc.pxW / calc.pxH;

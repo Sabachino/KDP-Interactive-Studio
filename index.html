@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
 
     <style>
-        /* FIX LAYOUT: Impedisce lo scroll della pagina intera */
+        /* FIX DEFINITIVO LAYOUT: Blocco totale scroll pagina */
         body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
         .banana-loader {
@@ -24,10 +24,8 @@
         }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* UI Elements */
         optgroup { color: #F59E0B; font-weight: 700; background-color: #111827; }
         option { color: white; background-color: #1F2937; font-weight: normal; }
-
         .text-shadow-black { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
         .text-shadow-strong { text-shadow: 2px 2px 4px #000000, 0 0 4px #000000; }
 
@@ -43,32 +41,19 @@
             background-position: center !important;
             background-repeat: no-repeat !important;
             margin: 0 auto;
-            /* FIX: Assicura che il canvas non esca dal contenitore */
-            flex-shrink: 0;
+            flex-shrink: 0; /* Cruciale: impedisce al canvas di schiacciarsi o rompere il layout */
         }
         
         .draggable-item {
-            position: absolute;
-            cursor: move;
-            border: none !important; 
-            outline: none !important;
-            background: transparent; 
-            box-shadow: none !important;
-            padding: 4px;
-            min-width: 20px; 
-            min-height: 1.2em;
-            display: inline-block;
-            white-space: nowrap;
-            transform-origin: center center;
-            z-index: 200; 
-            line-height: 1.1; 
+            position: absolute; cursor: move; border: none !important; outline: none !important;
+            background: transparent; box-shadow: none !important; padding: 4px;
+            min-width: 20px; min-height: 1.2em; display: inline-block; white-space: nowrap;
+            transform-origin: center center; z-index: 200; line-height: 1.1; 
         }
-        
         .draggable-item:empty { width: 50px; height: 30px; display: inline-block; }
         .draggable-item:hover, .draggable-item.selected, .draggable-item:focus { border: 1px dashed rgba(255, 255, 255, 0.5) !important; outline: none !important; }
         .cursor-crosshair { cursor: crosshair !important; }
 
-        /* Input Range Custom */
         input[type=range] { -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #F59E0B; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4B5563; border-radius: 2px; }
@@ -78,7 +63,6 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .style-btn.active { background-color: #F59E0B; color: #111827; border-color: #F59E0B; }
-
         .toggle-checkbox:checked { right: 0; border-color: #F59E0B; }
         .toggle-checkbox:checked + .toggle-label { background-color: #F59E0B; }
         .toggle-checkbox:checked + .toggle-label:before { transform: translateX(100%); }
@@ -91,7 +75,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4B5563; }
         
         #selectionBox { position: absolute; border: 2px dashed #ef4444; background-color: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; display: none; }
-
         #barcodeArea { position: absolute; width: 90px; height: 55px; background-color: #ffffff; align-items: center; justify-content: center; z-index: 1000; pointer-events: auto; box-shadow: 0 0 5px rgba(0,0,0,0.3); border: 4px solid white; flexDirection: column; }
         #barcodeLines { width: 100%; height: 80%; background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px); }
         #barcodeText { width: 100%; text-align: center; font-family: 'Courier New', monospace; font-size: 8px; color: black; height: 20%; line-height: 10px; background: white; font-weight: bold; }
@@ -124,7 +107,7 @@
 
     <div class="w-full px-6 py-4 flex flex-row gap-4 flex-1 overflow-hidden h-full">
         
-        <div class="w-[320px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar pb-10">
+        <div class="w-[320px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar pb-20">
             
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300 flex-shrink-0">
                 <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -523,9 +506,9 @@
                 </div>
             </div>
             
-            <div id="infoBar" class="h-12 bg-gray-800 rounded-lg border border-gray-700 flex items-center justify-between px-4 flex-shrink-0">
-                 <div id="canvasDimensionsDisplay" class="text-xs text-orange-200 font-mono hidden"></div>
-                 <div id="canvasInfo" class="hidden text-xs text-gray-400 flex items-center gap-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi. Usa il pannello a sinistra per personalizzarli.</span></div>
+            <div id="infoBar" class="h-12 bg-gray-800 rounded-lg border border-gray-700 flex items-center justify-between px-4 flex-shrink-0 shadow-lg">
+                 <div id="canvasDimensionsDisplay" class="text-xs text-orange-200 font-mono hidden flex items-center"><i class="fa-solid fa-ruler-combined mr-2"></i><span>Dimensioni: -</span></div>
+                 <div id="canvasInfo" class="hidden text-xs text-gray-400 flex items-center gap-2 ml-auto"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi per personalizzare.</span></div>
             </div>
             
             <canvas id="exportCanvas" class="hidden"></canvas>
@@ -534,15 +517,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- PROFESSIONAL API CONFIGURATION ---
-            // Sostituisci "YOUR_NANO_BANANA_KEY" con la chiave reale
+            // --- CONFIGURAZIONE ---
             const NANO_BANANA_API_KEY = "YOUR_PROFESSIONAL_KEY_HERE"; 
-            const NANO_BANANA_ENDPOINT = "https://api.nanobanana.com/v1/generate"; // Endpoint Placeholder
-            
-            // --- STRIPE CONFIGURATION ---
-            // Sostituisci con la tua Public Key di Stripe (pk_test_...)
+            const NANO_BANANA_ENDPOINT = "https://api.nanobanana.com/v1/generate"; 
             const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY'); 
 
+            // --- STATO ---
             const state = { 
                 mode: 'kindle', 
                 generatedImageB64: null, 
@@ -561,7 +541,7 @@
                 lastActiveMode: 'kindle'
             };
             
-            // --- ELEMENT REFERENCES ---
+            // --- RIFERIMENTI DOM ---
             const els = {
                 titleInput: document.getElementById('titleInput'), 
                 mood: document.getElementById('mood'),
@@ -675,18 +655,16 @@
                 resetBtn: document.getElementById('resetBtn')
             };
 
-            // --- FUNCTIONS ---
+            // --- LOGICA FUNZIONALE (INTATTA) ---
             
             function rgbToHex(r, g, b) {
                 if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
                 return ((r << 16) | (g << 8) | b).toString(16);
             }
             
-            // RESET MANUALE ("Soft Reset")
             function performReset() {
                  if(!confirm('Sei sicuro di voler resettare tutto e ricominciare da zero?')) return;
                  
-                 // 1. Reset Variabili di Stato
                  state.mode = 'kindle';
                  state.generatedImageB64 = null;
                  state.originalImageB64 = null;
@@ -701,7 +679,6 @@
                  state.isSelectingArea = false;
                  state.selectionRect = null;
                  
-                 // 2. Pulisci Campi Input
                  if(els.titleInput) els.titleInput.value = '';
                  if(els.mood) els.mood.value = '';
                  if(els.styleGenre) els.styleGenre.value = 'none';
@@ -713,23 +690,19 @@
                  if(els.importFrontInput) els.importFrontInput.value = '';
                  if(els.addBackImageInput) els.addBackImageInput.value = '';
                  
-                 // 3. Reset Switch
                  if(els.toggleBarcode) els.toggleBarcode.checked = false;
                  if(els.toggleGuides) els.toggleGuides.checked = false;
                  
-                 // 4. Reset Viste e UI
                  if(els.interactiveArea) {
                     els.interactiveArea.innerHTML = ''; 
                     els.interactiveArea.style.backgroundImage = '';
                     els.interactiveArea.classList.add('hidden');
-                    // Re-inject permanent overlays hidden
                     els.interactiveArea.appendChild(els.guidesOverlay);
                     els.interactiveArea.appendChild(els.barcodeArea);
                     els.interactiveArea.appendChild(els.selectionBox);
                  }
                  if(els.placeholder) els.placeholder.classList.remove('hidden');
                  
-                 // 5. Nascondi Pannelli
                  if(els.modificationArea) els.modificationArea.classList.add('hidden');
                  if(els.designStudio) els.designStudio.classList.add('hidden');
                  if(els.printSection) els.printSection.classList.add('hidden');
@@ -746,10 +719,8 @@
                  if(els.selectionBox) els.selectionBox.style.display = 'none';
                  if(els.styleRefPreview) els.styleRefPreview.classList.add('hidden');
                  if(els.clearStyleRef) els.clearStyleRef.classList.add('hidden');
-                 // NASCONDI ISTRUZIONI CANVAS
                  if(els.canvasInfo) els.canvasInfo.classList.add('hidden');
                  
-                 // 6. Reset Bottone Selezione
                  if(els.toggleSelectModeBtn) {
                     els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
                     els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
@@ -757,7 +728,6 @@
             }
 
             async function applyAiStyle() {
-                // Placeholder per funzione AI Style (Gemini) - Richiede API key Google
                 alert("Configura la API Key Google Gemini nel codice per usare questa funzione.");
             }
 
@@ -797,17 +767,14 @@
                 const pages = parseInt(els.pageCountInput.value) || 100;
                 const paperType = els.paperTypeInput.value;
 
-                // KDP SPINE COEFFICIENTS (EXACT VALUES)
                 let paperThickness = 0.002252; // White (Standard)
                 if (paperType === 'cream') paperThickness = 0.0025;
                 else if (paperType === 'color') paperThickness = 0.002347;
 
                 const spine = pages * paperThickness; 
-                const bleed = 0.125; // Standard KDP Bleed
+                const bleed = 0.125; 
                 
-                // Full Cover Width: Bleed + Back(w) + Spine + Front(w) + Bleed
                 const totalW_inch = bleed + w + spine + w + bleed;
-                // Full Cover Height: Bleed + Height + Bleed
                 const totalH_inch = bleed + h + bleed;
                 
                 const dpi = 300;
@@ -821,16 +788,7 @@
                     els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${pxW} x ${pxH} px</b> (300 DPI)`;
                 }
 
-                return { 
-                    pxW, 
-                    pxH, 
-                    frontPx: w*dpi, 
-                    spinePx: spine*dpi, 
-                    bleedPx: bleed*dpi,
-                    trimW: w,
-                    trimH: h,
-                    spineInch: spine
-                };
+                return { pxW, pxH, frontPx: w*dpi, spinePx: spine*dpi, bleedPx: bleed*dpi, trimW: w, trimH: h, spineInch: spine };
             }
 
             function initKindleCanvas() {
@@ -881,9 +839,9 @@
                 const ratio = calc.pxW / calc.pxH;
                 
                 // --- FIX LOGIC: FIT TO SCREEN (SCALE TO FIT) ---
-                const padding = 32; 
-                const maxW = els.previewContainer.clientWidth - padding;
-                const maxH = els.previewContainer.clientHeight - padding; 
+                // Calcola l'altezza disponibile reale nel contenitore padre, sottraendo padding e status bar
+                const maxW = els.previewContainer.clientWidth - 16;
+                const maxH = els.previewContainer.clientHeight - 16; 
 
                 // 1. Calcola larghezza ipotetica basata sul contenitore
                 let viewW = maxW;
@@ -923,22 +881,10 @@
                     const imgR = frontImg.width / frontImg.height;
                     const targetR = fw / fh;
                     
-                    if (imgR > targetR) { 
-                        dH = fh; 
-                        dW = fh * imgR; 
-                        dX = fx + (fw - dW)/2; 
-                        dY = 0; 
-                    } else { 
-                        dW = fw; 
-                        dH = fw / imgR; 
-                        dX = fx; 
-                        dY = (fh - dH)/2; 
-                    }
+                    if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
+                    else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
                     
-                    ctx.save(); 
-                    ctx.beginPath(); 
-                    ctx.rect(fx, 0, fw, fh); 
-                    ctx.clip();
+                    ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
                     ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
                     ctx.restore();
                     
@@ -964,9 +910,7 @@
                 // *** BARCODE POSITION LOGIC ***
                 const scale = viewW / calc.pxW;
                 const marginInch = 0.35; 
-                
                 const backCoverPanelWidth = calc.bleedPx + calc.frontPx; 
-                
                 const visualBackEnd = backCoverPanelWidth * scale;
                 const visualBarcodeLeft = visualBackEnd - 100; // 90px width + 10px padding
                 const visualBottom = viewH - (calc.bleedPx * scale) - 70; // 55px height + 15px padding
@@ -1017,10 +961,8 @@
                 
                 const trimBox = document.createElement('div');
                 trimBox.className = 'kdp-trim-line';
-                trimBox.style.left = bleed + 'px';
-                trimBox.style.top = bleed + 'px';
-                trimBox.style.width = (viewW - (bleed * 2)) + 'px';
-                trimBox.style.height = (viewH - (bleed * 2)) + 'px';
+                trimBox.style.left = bleed + 'px'; trimBox.style.top = bleed + 'px';
+                trimBox.style.width = (viewW - (bleed * 2)) + 'px'; trimBox.style.height = (viewH - (bleed * 2)) + 'px';
                 guideContainer.appendChild(trimBox);
                 
                 const topBleed = document.createElement('div'); topBleed.className = 'kdp-bleed-zone';
@@ -1041,15 +983,12 @@
 
                 const spineFold = document.createElement('div');
                 spineFold.className = 'kdp-spine-fold';
-                spineFold.style.left = spineStart + 'px';
-                spineFold.style.top = '0px';
-                spineFold.style.width = spineWidth + 'px';
+                spineFold.style.left = spineStart + 'px'; spineFold.style.top = '0px'; spineFold.style.width = spineWidth + 'px';
                 guideContainer.appendChild(spineFold);
 
                 const backSafe = document.createElement('div');
                 backSafe.className = 'kdp-safe-zone';
-                backSafe.style.left = (bleed + safe) + 'px';
-                backSafe.style.top = (bleed + safe) + 'px';
+                backSafe.style.left = (bleed + safe) + 'px'; backSafe.style.top = (bleed + safe) + 'px';
                 const spineSafeMargin = (0.0625 * 300) * scale;
                 backSafe.style.width = (spineStart - (bleed + safe) - spineSafeMargin) + 'px';
                 backSafe.style.height = (viewH - (bleed * 2) - (safe * 2)) + 'px';
@@ -1073,11 +1012,7 @@
                 };
                 if(type === 'image') { el.width = 150; el.src = content; }
                 else if (type === 'shape') { 
-                    el.width = 100; 
-                    el.height = 100; 
-                    el.shapeType = content; 
-                    el.style.color = '#F59E0B'; 
-                    el.borderRadius = 0;
+                    el.width = 100; el.height = 100; el.shapeType = content; el.style.color = '#F59E0B'; el.borderRadius = 0;
                 }
                 
                 state.elements.push(el); renderElementDOM(el); selectElement(id);
@@ -1095,11 +1030,7 @@
                  const domEl = document.getElementById(id);
                  
                  if(el && domEl) {
-                     el.style.fontSize = 12; 
-                     el.style.fontWeight = 'normal';
-                     domEl.style.fontSize = '12px';
-                     domEl.style.fontWeight = 'normal';
-                     selectElement(id);
+                     el.style.fontSize = 12; el.style.fontWeight = 'normal'; domEl.style.fontSize = '12px'; domEl.style.fontWeight = 'normal'; selectElement(id);
                  }
                  
                  const layout = state.paperbackLayout || updatePrintCalculations();
@@ -1113,8 +1044,7 @@
                  setTimeout(() => {
                      const dom = document.getElementById(id);
                      if(dom) {
-                        const w = dom.offsetWidth; 
-                        const h = dom.offsetHeight; 
+                        const w = dom.offsetWidth; const h = dom.offsetHeight; 
                         updateElementById(id, 'x', spineCenterX - (w/2));
                         updateElementById(id, 'y', spineCenterY - (h/2));
                      }
@@ -1197,21 +1127,14 @@
                     div.style.height = (el.height || el.width) + 'px'; 
                     
                     if (el.shapeType === 'triangle') {
-                        div.style.backgroundColor = 'transparent'; 
-                        div.style.width = '0'; 
-                        div.style.height = '0'; 
+                        div.style.backgroundColor = 'transparent'; div.style.width = '0'; div.style.height = '0'; 
                         div.style.borderLeft = (el.width/2) + 'px solid transparent';
                         div.style.borderRight = (el.width/2) + 'px solid transparent';
                         div.style.borderBottom = (el.height || el.width) + 'px solid ' + el.style.color;
                         div.style.borderRadius = '0';
                     } else if (el.shapeType === 'badge') {
                         div.style.backgroundColor = el.style.color;
-                        const points = [];
-                        const spikes = 40;
-                        const outer = 50;
-                        const inner = 45; 
-                        const cx = 50;
-                        const cy = 50;
+                        const points = []; const spikes = 40; const outer = 50; const inner = 45; const cx = 50; const cy = 50;
                         for(let i=0; i<spikes*2; i++){
                             const r = (i%2 === 0) ? outer : inner;
                             const angle = (Math.PI * i) / spikes;
@@ -1226,15 +1149,10 @@
                         div.style.clipPath = 'polygon(0% 0%, 100% 0%, 80% 50%, 100% 100%, 0% 100%)';
                         div.style.borderRadius = '0';
                     } else if (el.shapeType === 'bullet') {
-                        div.style.display = 'flex';
-                        div.style.alignItems = 'center';
-                        div.style.justifyContent = 'center'; 
+                        div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; 
                         const icon = document.createElement('div');
-                        icon.style.width = '20px';
-                        icon.style.height = '20px';
-                        icon.style.borderRadius = '50%';
-                        icon.style.backgroundColor = el.style.color; 
-                        icon.style.flexShrink = '0';
+                        icon.style.width = '20px'; icon.style.height = '20px'; icon.style.borderRadius = '50%';
+                        icon.style.backgroundColor = el.style.color; icon.style.flexShrink = '0';
                         icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                         div.appendChild(icon);
                         div.style.backgroundColor = 'transparent';
@@ -1272,11 +1190,8 @@
                     });
                     
                     let size = el.style.fontSize;
-                    if (typeof size === 'string' && size.includes('px')) {
-                        div.style.fontSize = size;
-                    } else {
-                        div.style.fontSize = size + 'px';
-                    }
+                    if (typeof size === 'string' && size.includes('px')) { div.style.fontSize = size; } 
+                    else { div.style.fontSize = size + 'px'; }
                     div.innerText = el.content;
                 } else if (el.type === 'image') {
                     const img = div.querySelector('img');
@@ -1368,7 +1283,6 @@
                         els.shapeHeightInput.value = el.height || el.width; els.shapeHeightDisplay.innerText = (el.height || el.width) + 'px';
                         const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + '°';
 
-                        // Show/Hide Border Radius Control specifically for Rectangles
                         if(el.shapeType === 'rect') {
                             els.borderRadiusControl.classList.remove('hidden');
                             els.shapeRadiusInput.value = el.borderRadius || 0;
@@ -1476,7 +1390,6 @@
                 if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi Titolo e Tema!");
                 
                 els.loader.classList.remove('hidden');
-                // AGGIUNTA LOGICA PER RESETTARE IL TESTO DEL LOADER AL MESSAGGIO DI GENERAZIONE
                 els.loaderText.innerText = "la tua cover è in arrivo..........";
                 
                 els.modificationPrompt.value = ''; 
@@ -1485,8 +1398,6 @@
                 
                 try {
                     console.log("Iniziando generazione professionale con Nano Banana...");
-                    
-                    // --- MOCK RESPONSE PER DIMOSTRAZIONE ---
                     const mockPrompt = (els.titleInput.value || "") + " " + (els.mood.value || "") + " book cover design, high quality, vertical aspect ratio";
                     const randomSeed = Math.floor(Math.random() * 99999);
                     const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(mockPrompt)}?width=800&height=1200&nologo=true&seed=${randomSeed}`;
@@ -1501,7 +1412,6 @@
                         state.generatedImageB64 = reader.result;
                         state.originalImageB64 = state.generatedImageB64;
                         
-                        // Avvia UI
                         initKindleCanvas(); 
                         
                         els.modificationArea.classList.remove('hidden');
@@ -1511,7 +1421,6 @@
                         
                         if(typeof updatePrintCalculations === 'function') updatePrintCalculations();
                         
-                        // Reset elementi
                         state.elements = [];
                         state.idCounter = 0;
                         
@@ -1528,89 +1437,62 @@
             
             // --- MODIFIED RENDER AND DOWNLOAD FUNCTION (PAY-PER-DOWNLOAD) ---
             function renderAndDownload(type) {
-                // 1. Controllo Contenuto
                 if (!state.generatedImageB64 && !state.printFrontImage) return alert("Nessun design da esportare!");
 
-                // 2. Definizione Prezzo e Oggetto
                 let price, itemName;
                 if(type === 'kindle') {
-                    price = "10.00€"; // PREZZO AGGIORNATO
-                    itemName = "Kindle Cover HD (JPG)";
+                    price = "10.00€"; itemName = "Kindle Cover HD (JPG)";
                 } else {
-                    price = "20.00€"; // PREZZO AGGIORNATO
-                    itemName = "KDP Print Layout (300DPI)";
+                    price = "20.00€"; itemName = "KDP Print Layout (300DPI)";
                 }
 
-                // 3. Popup di Conferma (Simulazione Pagamento)
                 if(confirm(`Vuoi procedere al pagamento di ${price} per scaricare ${itemName}?`)) {
-                    
-                    // A. Simulazione Attesa Pagamento
                     els.loader.classList.remove('hidden'); 
                     els.loaderText.innerText = "Reindirizzamento a Stripe in corso...";
-                    
                     setTimeout(() => {
                         els.loaderText.innerText = "Pagamento riuscito! Generazione file...";
-                        
-                        // B. Esecuzione Download dopo pagamento OK
-                        setTimeout(() => {
-                            executeDownloadGeneration(type);
-                        }, 1000);
-                        
+                        setTimeout(() => { executeDownloadGeneration(type); }, 1000);
                     }, 1500);
-
-                } else {
-                    // Annullato
-                    return;
                 }
             }
 
-            // Funzione interna che esegue effettivamente la generazione e il download
             function executeDownloadGeneration(type) {
                     try {
                         const canvas = els.exportCanvas;
                         const ctx = canvas.getContext('2d');
-                        
                         let targetW, targetH;
                         let scaleFactor = 1;
 
                         if (type === 'kindle') {
-                            targetW = 1600;
-                            targetH = 2400;
+                            targetW = 1600; targetH = 2400;
                             const viewW = parseFloat(els.interactiveArea.style.width) || 400;
                             scaleFactor = targetW / viewW;
                         } else {
                             const calc = updatePrintCalculations();
-                            targetW = calc.pxW;
-                            targetH = calc.pxH;
+                            targetW = calc.pxW; targetH = calc.pxH;
                             const viewW = parseFloat(els.interactiveArea.style.width);
                             if (!viewW) throw new Error("Errore dimensioni canvas. Riprova a generare il layout.");
                             scaleFactor = targetW / viewW;
                         }
 
-                        canvas.width = targetW;
-                        canvas.height = targetH;
+                        canvas.width = targetW; canvas.height = targetH;
                         
-                        // --- DRAWING LOGIC ---
                         const performDraw = (bgImg) => {
-                            // 1. Draw Background/Structure
                             if (type === 'kindle') {
-                                 const r = bgImg.width / bgImg.height;
-                                 const tr = targetW / targetH;
+                                 const r = bgImg.width / bgImg.height; const tr = targetW / targetH;
                                  let dw, dh, dx, dy;
                                  if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
                                  else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
                                  ctx.drawImage(bgImg, dx, dy, dw, dh);
                             } else {
                                  const calc = updatePrintCalculations();
-                                 ctx.fillStyle = els.backColorInput.value; 
-                                 ctx.fillRect(0,0, targetW, targetH);
+                                 ctx.fillStyle = els.backColorInput.value; ctx.fillRect(0,0, targetW, targetH);
                                  ctx.fillStyle = els.spineColorInput.value;
                                  const spineStart = calc.bleedPx + calc.frontPx; 
                                  ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
 
                                  const fx = spineStart + calc.spinePx;
-                                 const fw = calc.frontPx + calc.bleedPx; 
-                                 const fh = targetH;
+                                 const fw = calc.frontPx + calc.bleedPx; const fh = targetH;
                                  
                                  const imgR = bgImg.width / bgImg.height;
                                  const targetR = fw / fh;
@@ -1618,26 +1500,17 @@
                                  if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
                                  else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
                                  
-                                 ctx.save(); 
-                                 ctx.beginPath(); 
-                                 ctx.rect(fx, 0, fw, fh); 
-                                 ctx.clip();
+                                 ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
                                  ctx.drawImage(bgImg, dX, dY, dW, dH);
                                  ctx.restore();
                             }
 
-                            // 2. Draw Elements (Text/Shapes)
                             state.elements.forEach(el => {
                                  ctx.save();
                                  let rectW = 0, rectH = 0;
                                  const domEl = document.getElementById(el.id);
-                                 if (domEl) {
-                                      rectW = domEl.offsetWidth; 
-                                      rectH = domEl.offsetHeight;
-                                 } else {
-                                      rectW = el.width || 100;
-                                      rectH = el.height || el.width || 100;
-                                 }
+                                 if (domEl) { rectW = domEl.offsetWidth; rectH = domEl.offsetHeight; } 
+                                 else { rectW = el.width || 100; rectH = el.height || el.width || 100; }
 
                                  const scaledW = rectW * scaleFactor;
                                  const scaledH = rectH * scaleFactor;
@@ -1648,15 +1521,13 @@
                                  ctx.rotate(el.rotation * Math.PI / 180);
                                  ctx.globalAlpha = el.style.opacity || 1;
 
-                                 const drawX = -scaledW / 2;
-                                 const drawY = -scaledH / 2;
+                                 const drawX = -scaledW / 2; const drawY = -scaledH / 2;
                                  
                                  if(el.type === 'text') {
                                       const fSize = parseFloat(window.getComputedStyle(domEl).fontSize) * scaleFactor;
                                       ctx.font = `${el.style.fontWeight} ${el.style.fontStyle} ${fSize}px ${el.style.fontFamily.replace(/'/g, "")}`;
                                       ctx.fillStyle = el.style.color;
-                                      ctx.textBaseline = 'middle'; 
-                                      ctx.textAlign = el.style.textAlign || 'center';
+                                      ctx.textBaseline = 'middle'; ctx.textAlign = el.style.textAlign || 'center';
                                       
                                       if(el.shadowProps) {
                                            ctx.shadowColor = el.shadowProps.color;
@@ -1666,8 +1537,7 @@
                                            ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
                                       }
 
-                                      let textX = 0;
-                                      const paddingOffset = 4 * scaleFactor;
+                                      let textX = 0; const paddingOffset = 4 * scaleFactor;
                                       if (el.style.textAlign === 'center') textX = 0;
                                       else if (el.style.textAlign === 'right') textX = (scaledW / 2) - paddingOffset;
                                       else textX = (-scaledW / 2) + paddingOffset;
@@ -1681,9 +1551,7 @@
                                       }
                                  } else if (el.type === 'image') {
                                       const img = domEl.querySelector('img');
-                                      if(img) {
-                                           ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
-                                      }
+                                      if(img) { ctx.drawImage(img, drawX, drawY, scaledW, scaledH); }
                                  } else if (el.type === 'shape') {
                                       ctx.fillStyle = el.style.color;
                                       if(el.shadowProps) {
@@ -1710,16 +1578,10 @@
                                            ctx.fill();
                                       }
                                       else if(el.shapeType === 'circle') {
-                                           ctx.beginPath(); 
-                                           ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); 
-                                           ctx.fill();
+                                           ctx.beginPath(); ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); ctx.fill();
                                       } 
                                       else if (el.shapeType === 'triangle') {
-                                           ctx.beginPath(); 
-                                           ctx.moveTo(0, -scaledH/2); 
-                                           ctx.lineTo(drawX + scaledW, drawY + scaledH); 
-                                           ctx.lineTo(drawX, drawY + scaledH); 
-                                           ctx.fill();
+                                           ctx.beginPath(); ctx.moveTo(0, -scaledH/2); ctx.lineTo(drawX + scaledW, drawY + scaledH); ctx.lineTo(drawX, drawY + scaledH); ctx.fill();
                                       }
                                       else {
                                            ctx.fillRect(drawX, drawY, scaledW, scaledH); 
@@ -1728,7 +1590,6 @@
                                  ctx.restore();
                             });
 
-                            // 4. Download
                             try {
                                 const link = document.createElement('a');
                                 link.download = `cover-${type}-${Date.now()}.jpg`;
@@ -1752,10 +1613,7 @@
                         const bgImg = new Image();
                         bgImg.crossOrigin = "anonymous";
                         bgImg.onload = () => performDraw(bgImg);
-                        bgImg.onerror = () => { 
-                            alert("Errore caricamento immagine per esportazione."); 
-                            els.loader.classList.add('hidden');
-                        };
+                        bgImg.onerror = () => { alert("Errore caricamento immagine per esportazione."); els.loader.classList.add('hidden'); };
                         bgImg.src = imgSource;
 
                     } catch(e) {
@@ -1765,7 +1623,6 @@
                     }
             }
             
-            // FIXED EVENT LISTENERS FOR TOGGLES
             els.toggleBarcode.addEventListener('change', (e) => {
                 if(e.target.checked) els.barcodeArea.classList.remove('hidden');
                 else els.barcodeArea.classList.add('hidden');
@@ -1783,7 +1640,7 @@
                 } else els.guidesOverlay.classList.add('hidden');
             });
 
-            // --- LISTENERS ---
+            // --- EVENT LISTENERS ---
             els.runAgentsBtn.addEventListener('click', generateBaseArtwork);
             els.modifyArtworkBtn.addEventListener('click', () => { alert("Work in progress!"); });
             els.undoBtn.addEventListener('click', () => { alert("Undo non disponibile nella demo."); });
@@ -1823,7 +1680,6 @@
                 }
             });
 
-            // NEW SHAPE LISTENERS
             els.shapeWidthInput.addEventListener('input', (e) => {
                 els.shapeWidthDisplay.innerText = e.target.value + 'px';
                 updateSelectedElement('width', parseInt(e.target.value));

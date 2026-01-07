@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; } /* Prevent horizontal scroll */
+        body { font-family: 'Inter', sans-serif; }
         
         .banana-loader {
             width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #FFD700;
@@ -229,7 +229,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900 overflow-hidden">
+<body class="bg-gray-900 text-white selection:bg-yellow-500 selection:text-gray-900">
 
     <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-lg">
         <div class="w-full px-6 flex justify-between items-center">
@@ -249,9 +249,9 @@
         </div>
     </nav>
 
-    <div class="w-full px-6 py-4 flex flex-col lg:flex-row gap-4 relative items-start mt-2 h-[calc(100vh-5rem)]">
+    <div class="w-full px-6 py-4 flex flex-col lg:flex-row gap-4 relative mt-2 min-h-screen">
         
-        <div class="w-full lg:w-[20%] flex-shrink-0 space-y-4 lg:overflow-y-auto custom-scrollbar pr-2 h-full pb-20">
+        <div class="w-full lg:w-[20%] flex-shrink-0 space-y-4 lg:overflow-y-auto custom-scrollbar pr-2 h-[calc(100vh-5rem)] pb-24">
             
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300">
                 <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -634,13 +634,13 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-[80%] flex flex-col gap-6 lg:sticky lg:top-20 h-full">
-            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-[calc(100vh-7rem)] flex flex-col items-center justify-center relative overflow-hidden p-2">
+        <div class="w-full lg:w-[80%] flex flex-col gap-6">
+            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 min-h-[600px] flex flex-col items-center justify-center relative p-2">
                 <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
                     <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
                 </div>
                 <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
-                <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
+                <div id="interactiveArea" class="hidden shadow-2xl relative bg-black min-h-[500px]">
                     <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
                     <div id="selectionBox" style="display:none;"></div>
                 </div>

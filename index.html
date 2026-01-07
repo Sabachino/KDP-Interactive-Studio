@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; } /* Prevent horizontal scroll */
         
         .banana-loader {
             width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: #FFD700;
@@ -229,10 +229,10 @@
         }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900">
+<body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900 overflow-hidden">
 
     <nav class="bg-gray-800 border-b border-gray-700 p-4 sticky top-0 z-50 shadow-lg">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="w-full px-6 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-layer-group text-yellow-400 text-2xl"></i>
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
@@ -249,14 +249,14 @@
         </div>
     </nav>
 
-    <div class="w-full px-6 py-4 flex flex-col lg:flex-row gap-8 relative items-start mt-8">
+    <div class="w-full px-6 py-4 flex flex-col lg:flex-row gap-4 relative items-start mt-2 h-[calc(100vh-5rem)]">
         
-        <div class="w-full lg:w-[20%] flex-shrink-0 space-y-6 lg:sticky lg:top-28 lg:max-h-[calc(100vh-9rem)] lg:overflow-y-auto custom-scrollbar pr-2">
+        <div class="w-full lg:w-[20%] flex-shrink-0 space-y-4 lg:overflow-y-auto custom-scrollbar pr-2 h-full pb-20">
             
             <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300">
                 <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-brain text-fuchsia-300"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione Nano Banana</span>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione Artwork</span>
                 </h2>
                 <div class="space-y-4">
                     <div>
@@ -265,7 +265,7 @@
                     </div>
                     <div>
                         <label class="text-xs text-gray-200 uppercase font-bold">Tema della Copertina</label>
-                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto per Nano Banana Pro..."></textarea>
+                        <textarea id="mood" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2.5 mt-1 text-sm text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto..."></textarea>
                     </div>
                     <div>
                         <label class="text-xs text-gray-200 uppercase font-bold">Genere (Stile Artistico)</label>
@@ -634,8 +634,8 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-[80%] flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 min-h-[600px] flex flex-col items-center justify-center relative overflow-hidden p-8">
+        <div class="w-full lg:w-[80%] flex flex-col gap-6 lg:sticky lg:top-20 h-full">
+            <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 h-[calc(100vh-7rem)] flex flex-col items-center justify-center relative overflow-hidden p-2">
                 <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
                     <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
                 </div>
@@ -649,9 +649,9 @@
                     <div id="barcodeText">ISBN 978-0-00-000000-0</div>
                 </div>
                 
-                <div id="canvasDimensionsDisplay" class="mt-4 text-xs text-orange-200 font-mono text-center hidden p-2 bg-gray-900/50 rounded border border-gray-700"></div>
+                <div id="canvasDimensionsDisplay" class="mt-4 text-xs text-orange-200 font-mono text-center hidden p-2 bg-gray-900/50 rounded border border-gray-700 absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50"></div>
                 
-                <div id="canvasInfo" class="hidden mt-2 text-xs text-gray-400 flex items-center gap-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi. Usa il pannello a sinistra per personalizzarli.</span></div>
+                <div id="canvasInfo" class="hidden mt-2 text-xs text-gray-400 flex items-center gap-2 absolute top-2 right-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi. Usa il pannello a sinistra per personalizzarli.</span></div>
             </div>
             <canvas id="exportCanvas" class="hidden"></canvas>
         </div>
@@ -1006,9 +1006,9 @@
                 const ratio = calc.pxW / calc.pxH;
                 
                 // --- FIX LOGIC: FIT TO SCREEN (SCALE TO FIT) ---
-                const padding = 64; // Padding orizzontale
+                const padding = 16; // Reduced padding
                 const maxW = els.previewContainer.clientWidth - padding;
-                const maxH = window.innerHeight - 180; // Altezza massima sicura per evitare scroll (header + padding)
+                const maxH = window.innerHeight - 150; // Increased constraint to ensure fit
 
                 // 1. Calcola larghezza ipotetica basata sul contenitore
                 let viewW = maxW;

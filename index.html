@@ -1005,9 +1005,21 @@
                 const calc = updatePrintCalculations();
                 const ratio = calc.pxW / calc.pxH;
                 
-                const containerW = els.previewContainer.clientWidth - 64; 
-                let viewW = containerW;
+                // --- FIX LOGIC: FIT TO SCREEN (SCALE TO FIT) ---
+                const padding = 64; // Padding orizzontale
+                const maxW = els.previewContainer.clientWidth - padding;
+                const maxH = window.innerHeight - 180; // Altezza massima sicura per evitare scroll (header + padding)
+
+                // 1. Calcola larghezza ipotetica basata sul contenitore
+                let viewW = maxW;
                 let viewH = viewW / ratio;
+
+                // 2. Se l'altezza supera il limite visibile, ridimensiona basandosi sull'altezza
+                if (viewH > maxH) {
+                    viewH = maxH;
+                    viewW = viewH * ratio;
+                }
+                // --- END FIX ---
                 
                 els.interactiveArea.style.width = viewW + 'px';
                 els.interactiveArea.style.height = viewH + 'px';
@@ -1768,78 +1780,78 @@
                                  const drawY = -scaledH / 2;
                                  
                                  if(el.type === 'text') {
-                                     const fSize = parseFloat(window.getComputedStyle(domEl).fontSize) * scaleFactor;
-                                     ctx.font = `${el.style.fontWeight} ${el.style.fontStyle} ${fSize}px ${el.style.fontFamily.replace(/'/g, "")}`;
-                                     ctx.fillStyle = el.style.color;
-                                     ctx.textBaseline = 'middle'; 
-                                     ctx.textAlign = el.style.textAlign || 'center';
-                                     
-                                     if(el.shadowProps) {
-                                          ctx.shadowColor = el.shadowProps.color;
-                                          ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                          const rad = el.shadowProps.angle * (Math.PI/180);
-                                          ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                          ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
-                                     }
+                                      const fSize = parseFloat(window.getComputedStyle(domEl).fontSize) * scaleFactor;
+                                      ctx.font = `${el.style.fontWeight} ${el.style.fontStyle} ${fSize}px ${el.style.fontFamily.replace(/'/g, "")}`;
+                                      ctx.fillStyle = el.style.color;
+                                      ctx.textBaseline = 'middle'; 
+                                      ctx.textAlign = el.style.textAlign || 'center';
+                                      
+                                      if(el.shadowProps) {
+                                           ctx.shadowColor = el.shadowProps.color;
+                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                           const rad = el.shadowProps.angle * (Math.PI/180);
+                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                      }
 
-                                     let textX = 0;
-                                     const paddingOffset = 4 * scaleFactor;
-                                     if (el.style.textAlign === 'center') textX = 0;
-                                     else if (el.style.textAlign === 'right') textX = (scaledW / 2) - paddingOffset;
-                                     else textX = (-scaledW / 2) + paddingOffset;
-                                     
-                                     ctx.fillText(el.content, textX, 0); 
-                                     
-                                     if(parseFloat(el.style.webkitTextStrokeWidth) > 0) {
-                                          ctx.strokeStyle = el.style.webkitTextStrokeColor;
-                                          ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
-                                          ctx.strokeText(el.content, textX, 0); 
-                                     }
+                                      let textX = 0;
+                                      const paddingOffset = 4 * scaleFactor;
+                                      if (el.style.textAlign === 'center') textX = 0;
+                                      else if (el.style.textAlign === 'right') textX = (scaledW / 2) - paddingOffset;
+                                      else textX = (-scaledW / 2) + paddingOffset;
+                                      
+                                      ctx.fillText(el.content, textX, 0); 
+                                      
+                                      if(parseFloat(el.style.webkitTextStrokeWidth) > 0) {
+                                           ctx.strokeStyle = el.style.webkitTextStrokeColor;
+                                           ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
+                                           ctx.strokeText(el.content, textX, 0); 
+                                      }
                                  } else if (el.type === 'image') {
-                                     const img = domEl.querySelector('img');
-                                     if(img) {
-                                          ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
-                                     }
+                                      const img = domEl.querySelector('img');
+                                      if(img) {
+                                           ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+                                      }
                                  } else if (el.type === 'shape') {
-                                     ctx.fillStyle = el.style.color;
-                                     if(el.shadowProps) {
-                                          ctx.shadowColor = el.shadowProps.color;
-                                          ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                          const rad = el.shadowProps.angle * (Math.PI/180);
-                                          ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                          ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
-                                     }
+                                      ctx.fillStyle = el.style.color;
+                                      if(el.shadowProps) {
+                                           ctx.shadowColor = el.shadowProps.color;
+                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                           const rad = el.shadowProps.angle * (Math.PI/180);
+                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                      }
 
-                                     if(el.shapeType === 'rect') {
-                                          const r = (el.borderRadius || 0) * scaleFactor;
-                                          ctx.beginPath();
-                                          ctx.moveTo(drawX + r, drawY);
-                                          ctx.lineTo(drawX + scaledW - r, drawY);
-                                          ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
-                                          ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
-                                          ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
-                                          ctx.lineTo(drawX + r, drawY + scaledH);
-                                          ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
-                                          ctx.lineTo(drawX, drawY + r);
-                                          ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
-                                          ctx.closePath();
-                                          ctx.fill();
-                                     }
-                                     else if(el.shapeType === 'circle') {
-                                          ctx.beginPath(); 
-                                          ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); 
-                                          ctx.fill();
-                                     } 
-                                     else if (el.shapeType === 'triangle') {
-                                          ctx.beginPath(); 
-                                          ctx.moveTo(0, -scaledH/2); 
-                                          ctx.lineTo(drawX + scaledW, drawY + scaledH); 
-                                          ctx.lineTo(drawX, drawY + scaledH); 
-                                          ctx.fill();
-                                     }
-                                     else {
-                                          ctx.fillRect(drawX, drawY, scaledW, scaledH); 
-                                     }
+                                      if(el.shapeType === 'rect') {
+                                           const r = (el.borderRadius || 0) * scaleFactor;
+                                           ctx.beginPath();
+                                           ctx.moveTo(drawX + r, drawY);
+                                           ctx.lineTo(drawX + scaledW - r, drawY);
+                                           ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
+                                           ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
+                                           ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
+                                           ctx.lineTo(drawX + r, drawY + scaledH);
+                                           ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
+                                           ctx.lineTo(drawX, drawY + r);
+                                           ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
+                                           ctx.closePath();
+                                           ctx.fill();
+                                      }
+                                      else if(el.shapeType === 'circle') {
+                                           ctx.beginPath(); 
+                                           ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); 
+                                           ctx.fill();
+                                      } 
+                                      else if (el.shapeType === 'triangle') {
+                                           ctx.beginPath(); 
+                                           ctx.moveTo(0, -scaledH/2); 
+                                           ctx.lineTo(drawX + scaledW, drawY + scaledH); 
+                                           ctx.lineTo(drawX, drawY + scaledH); 
+                                           ctx.fill();
+                                      }
+                                      else {
+                                           ctx.fillRect(drawX, drawY, scaledW, scaledH); 
+                                      }
                                  }
                                  ctx.restore();
                             });
@@ -1890,11 +1902,11 @@
             els.toggleGuides.addEventListener('change', (e) => {
                 if(e.target.checked) {
                     if(state.mode === 'paperback') {
-                         if (!state.paperbackLayout) state.paperbackLayout = updatePrintCalculations();
-                         const viewW = parseFloat(els.interactiveArea.style.width);
-                         const viewH = parseFloat(els.interactiveArea.style.height);
-                         drawKDPGuides(state.paperbackLayout, viewW, viewH);
-                         els.guidesOverlay.classList.remove('hidden');
+                          if (!state.paperbackLayout) state.paperbackLayout = updatePrintCalculations();
+                          const viewW = parseFloat(els.interactiveArea.style.width);
+                          const viewH = parseFloat(els.interactiveArea.style.height);
+                          drawKDPGuides(state.paperbackLayout, viewW, viewH);
+                          els.guidesOverlay.classList.remove('hidden');
                     }
                 } else els.guidesOverlay.classList.add('hidden');
             });
@@ -1987,8 +1999,6 @@
 
             els.resetBtn.addEventListener('click', performReset);
             
-            // --- REMOVED BUY CREDITS BUTTON LISTENER AS IT NO LONGER EXISTS ---
-
             els.addRectBtn.addEventListener('click', () => addElement('shape', 'rect'));
             els.addCircleBtn.addEventListener('click', () => addElement('shape', 'circle'));
             els.addBadgeBtn.addEventListener('click', () => addElement('shape', 'badge'));

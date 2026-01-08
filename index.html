@@ -821,54 +821,69 @@
                 state.elements.forEach(el => renderElementDOM(el));
             }
 
+            // ---------------------------------------------------------
+            // FUNZIONE initPaperbackMode (CORRETTA)
+            // ---------------------------------------------------------
             function initPaperbackMode() {
+                // 1. Validazione preliminare
                 if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
                 
+                // 2. Aggiornamento Stato
                 const wasKindle = (state.mode === 'kindle');
                 state.mode = 'paperback';
                 state.isSelectingArea = false;
+
+                // 3. Reset UI Strutturale (CRUCIALE PER LA VISIBILITÀ)
                 els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
-                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                els.placeholder.classList.add('hidden');
+                
+                // Rimuove display:none e mostra l'area
+                els.interactiveArea.classList.remove('hidden');
+                els.canvasInfo.classList.remove('hidden');
+                
+                if(els.toggleSelectModeBtn) {
+                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600 hover:bg-pink-500 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                }
 
+                // 4. Calcolo Dimensioni e Layout
                 const calc = updatePrintCalculations();
                 const ratio = calc.pxW / calc.pxH;
                 
-                // --- FIX LAYOUT: CALCOLO SPAZI PERFETTI (Fit to Screen) ---
-                // Calcoliamo lo spazio effettivamente disponibile nel contenitore padre
-                const container = els.previewContainer;
-                const padding = 40; // Spazio di sicurezza attorno alla canvas
-                const availableW = container.clientWidth - padding;
-                const availableH = container.clientHeight - padding;
-                
+                // Calcola spazio disponibile con padding
+                const containerPadding = 40; 
+                const availableW = els.previewContainer.clientWidth - containerPadding;
+                const availableH = els.previewContainer.clientHeight - containerPadding; 
+
                 let viewW, viewH;
-                
-                // Determiniamo se dobbiamo limitare per larghezza o altezza per mantenere l'aspect ratio
                 const containerRatio = availableW / availableH;
-                
+
+                // Algoritmo "Contain"
                 if (ratio > containerRatio) {
-                    // L'immagine è più larga del contenitore in proporzione -> Adatta alla larghezza
                     viewW = availableW;
                     viewH = viewW / ratio;
                 } else {
-                    // L'immagine è più alta del contenitore in proporzione -> Adatta all'altezza
                     viewH = availableH;
                     viewW = viewH * ratio;
                 }
-
+                
+                // Applica dimensioni
                 els.interactiveArea.style.width = viewW + 'px';
                 els.interactiveArea.style.height = viewH + 'px';
                 
                 els.canvasDimensionsDisplay.classList.remove('hidden');
-                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>FILE TOTALE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
                 
+                // 5. Generazione Background
                 const bgCanvas = document.createElement('canvas');
                 bgCanvas.width = calc.pxW; bgCanvas.height = calc.pxH;
                 const ctx = bgCanvas.getContext('2d');
                 
                 const frontImg = new Image();
+                
                 frontImg.onload = () => {
+                    // Colori base
                     ctx.fillStyle = els.backColorInput.value; 
                     ctx.fillRect(0,0, calc.pxW, calc.pxH);
                     
@@ -876,31 +891,45 @@
                     const backCoverWidth = calc.bleedPx + calc.frontPx; 
                     ctx.fillRect(backCoverWidth, 0, calc.spinePx, calc.pxH);
 
+                    // Calcoli per l'immagine frontale
                     const fx = backCoverWidth + calc.spinePx;
-                    let dW, dH, dX, dY;
                     const fw = calc.frontPx + calc.bleedPx; 
                     const fh = calc.pxH; 
 
                     const imgR = frontImg.width / frontImg.height;
                     const targetR = fw / fh;
                     
-                    if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                    else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
+                    let dW, dH, dX, dY;
+                    if (imgR > targetR) { 
+                        dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; 
+                    } else { 
+                        dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; 
+                    }
                     
-                    ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
+                    // Disegna immagine
+                    ctx.save(); 
+                    ctx.beginPath(); 
+                    ctx.rect(fx, 0, fw, fh); 
+                    ctx.clip();
                     ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
                     ctx.restore();
                     
+                    // Applica background
                     els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
-                    els.interactiveArea.style.backgroundSize = 'contain';
+                    els.interactiveArea.style.backgroundSize = 'contain'; 
                 };
+                
                 frontImg.src = state.printFrontImage || state.generatedImageB64;
                 
-                els.interactiveArea.innerHTML = '';
-                els.interactiveArea.appendChild(els.guidesOverlay); 
-                els.interactiveArea.appendChild(els.barcodeArea); 
-                els.interactiveArea.appendChild(els.selectionBox); 
+                // 6. Gestione Elementi Interni (Guide, Barcode)
+                const existingGuides = document.getElementById('guidesOverlay');
+                const existingBarcode = document.getElementById('barcodeArea');
+                const existingSelection = document.getElementById('selectionBox');
                 
+                if (!els.interactiveArea.contains(existingGuides)) els.interactiveArea.appendChild(els.guidesOverlay);
+                if (!els.interactiveArea.contains(existingBarcode)) els.interactiveArea.appendChild(els.barcodeArea);
+                if (!els.interactiveArea.contains(existingSelection)) els.interactiveArea.appendChild(els.selectionBox);
+
                 els.guidesOverlay.classList.add('hidden');
                 els.barcodeArea.classList.add('hidden');
                 
@@ -910,25 +939,27 @@
                     els.guidesOverlay.classList.remove('hidden');
                 }
 
-                // *** BARCODE POSITION LOGIC ***
+                // 7. Posizionamento Barcode
                 const scale = viewW / calc.pxW;
-                const marginInch = 0.35; 
                 const backCoverPanelWidth = calc.bleedPx + calc.frontPx; 
                 const visualBackEnd = backCoverPanelWidth * scale;
-                const visualBarcodeLeft = visualBackEnd - 100; // 90px width + 10px padding
-                const visualBottom = viewH - (calc.bleedPx * scale) - 70; // 55px height + 15px padding
+                const visualBarcodeLeft = visualBackEnd - 100; 
+                const visualBottom = viewH - (calc.bleedPx * scale) - 70; 
                 
                 els.barcodeArea.style.left = visualBarcodeLeft + 'px';
                 els.barcodeArea.style.top = visualBottom + 'px';
 
+                // 8. Mostra UI Tools
                 els.paperbackTools.classList.remove('hidden');
                 els.spineTools.classList.remove('hidden'); 
                 els.downloadPrintBtn.classList.remove('hidden');
+                
                 state.paperbackLayout = calc;
                 state.canvasScale = scale;
                 
+                // 9. Migrazione Elementi (se necessario)
                 if (wasKindle) {
-                    const kindleWidth = 400;
+                    const kindleWidth = 400; 
                     const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
                     const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
                     const elementScale = frontCoverVisualWidth / kindleWidth;
@@ -945,12 +976,31 @@
                     });
                 }
                 
+                // Pulizia vecchi elementi DOM
+                const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
+                oldDraggables.forEach(d => d.remove());
+                
+                // Rendering nuovi elementi
                 state.elements.forEach(el => renderElementDOM(el));
 
+                // Scroll ai tools
                 setTimeout(() => {
                     els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
+
+            // ---------------------------------------------------------
+            // 2. LISTENER PER IL RESIZE (FUORI dalla funzione sopra)
+            // ---------------------------------------------------------
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (state.mode === 'paperback' && state.paperbackLayout) {
+                        initPaperbackMode(); 
+                    }
+                }, 200);
+            });
 
             function drawKDPGuides(calc, viewW, viewH) {
                 const guideContainer = els.guidesOverlay;

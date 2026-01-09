@@ -31,19 +31,19 @@
         .text-shadow-black { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
         .text-shadow-strong { text-shadow: 2px 2px 4px #000000, 0 0 4px #000000; }
 
-        /* INTERACTIVE CANVAS STYLES */
+        /* INTERACTIVE CANVAS STYLES - FIX: Rimosso !important per permettere controllo JS */
         #interactiveArea {
             position: relative;
             overflow: hidden;
             user-select: none;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-            background-color: #1a202c;
-            background-size: cover !important;
-            background-position: center !important;
-            background-repeat: no-repeat !important;
+            transition: width 0.3s ease, height 0.3s ease; /* Smooth resize */
+            background-color: #ffffff; /* Default bianco carta */
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
             margin: 0 auto;
-            flex-shrink: 0; /* Cruciale: impedisce al canvas di schiacciarsi */
+            flex-shrink: 0; 
         }
         
         .draggable-item {
@@ -493,10 +493,12 @@
                     <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
                 </div>
                 <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
+                
                 <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
                     <div id="guidesOverlay" class="absolute inset-0 pointer-events-none hidden"></div>
                     <div id="selectionBox" style="display:none;"></div>
                 </div>
+                
                 <div id="barcodeArea" class="hidden flex flex-col items-center justify-center">
                     <div id="barcodeLines"></div>
                     <div id="barcodeText">ISBN 978-0-00-000000-0</div>
@@ -652,7 +654,7 @@
                 resetBtn: document.getElementById('resetBtn')
             };
 
-            // --- LOGICA FUNZIONALE (INTATTA) ---
+            // --- LOGICA FUNZIONALE ---
             
             function rgbToHex(r, g, b) {
                 if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
@@ -697,6 +699,9 @@
                     els.interactiveArea.appendChild(els.guidesOverlay);
                     els.interactiveArea.appendChild(els.barcodeArea);
                     els.interactiveArea.appendChild(els.selectionBox);
+                    // Reset Inline Styles
+                    els.interactiveArea.style.width = '';
+                    els.interactiveArea.style.height = '';
                  }
                  if(els.placeholder) els.placeholder.classList.remove('hidden');
                  
@@ -822,10 +827,10 @@
             }
 
             // ---------------------------------------------------------
-            // FUNZIONE initPaperbackMode (CORRETTA)
+            // FIX: GESTIONE PAPERBACK MODE + RESIZE OBSERVER
             // ---------------------------------------------------------
             function initPaperbackMode() {
-                // 1. Validazione preliminare
+                // 1. Validazione
                 if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
                 
                 // 2. Aggiornamento Stato
@@ -833,68 +838,110 @@
                 state.mode = 'paperback';
                 state.isSelectingArea = false;
 
-                // 3. Reset UI Strutturale (CRUCIALE PER LA VISIBILITÀ)
+                // 3. UI Reset
                 els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
                 els.placeholder.classList.add('hidden');
                 
-                // Rimuove display:none e mostra l'area
-                els.interactiveArea.classList.remove('hidden');
-                els.canvasInfo.classList.remove('hidden');
-                
+                // Reset toggle
                 if(els.toggleSelectModeBtn) {
                     els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
                     els.toggleSelectModeBtn.className = 'w-full bg-pink-600 hover:bg-pink-500 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
                 }
 
-                // 4. Calcolo Dimensioni e Layout
-                const calc = updatePrintCalculations();
-                const ratio = calc.pxW / calc.pxH;
-                
-                // Calcola spazio disponibile con padding
-                const containerPadding = 40; 
-                const availableW = els.previewContainer.clientWidth - containerPadding;
-                const availableH = els.previewContainer.clientHeight - containerPadding; 
+                // FIX CRITICO: Pulizia stili inline Kindle prima del calcolo
+                els.interactiveArea.style.width = '';
+                els.interactiveArea.style.height = '';
+                els.interactiveArea.classList.remove('hidden');
+                els.canvasInfo.classList.remove('hidden');
 
-                let viewW, viewH;
-                const containerRatio = availableW / availableH;
+                // 4. Calcolo Geometria con doppio requestAnimationFrame per garantire che il DOM sia pronto
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        const calc = updatePrintCalculations();
+                        const ratio = calc.pxW / calc.pxH;
+                        
+                        // Misura il container reale
+                        const containerPadding = 40; 
+                        const rect = els.previewContainer.getBoundingClientRect();
+                        const availableW = rect.width - containerPadding;
+                        const availableH = rect.height - containerPadding; 
 
-                // Algoritmo "Contain"
-                if (ratio > containerRatio) {
-                    viewW = availableW;
-                    viewH = viewW / ratio;
-                } else {
-                    viewH = availableH;
-                    viewW = viewH * ratio;
-                }
-                
-                // Applica dimensioni
-                els.interactiveArea.style.width = viewW + 'px';
-                els.interactiveArea.style.height = viewH + 'px';
-                
-                els.canvasDimensionsDisplay.classList.remove('hidden');
-                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>FILE TOTALE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
-                
-                // 5. Generazione Background
+                        if (availableW <= 0 || availableH <= 0) return; // Non visibile ancora
+
+                        let viewW, viewH;
+                        const containerRatio = availableW / availableH;
+
+                        // Algoritmo "Contain"
+                        if (ratio > containerRatio) {
+                            viewW = availableW;
+                            viewH = viewW / ratio;
+                        } else {
+                            viewH = availableH;
+                            viewW = viewH * ratio;
+                        }
+                        
+                        // Applica Dimensioni
+                        els.interactiveArea.style.width = viewW + 'px';
+                        els.interactiveArea.style.height = viewH + 'px';
+                        
+                        // Visualizza Info
+                        els.canvasDimensionsDisplay.classList.remove('hidden');
+                        els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>FILE TOTALE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+                        
+                        // 5. Generazione Canvas Background
+                        generatePaperbackBackground(calc, calc.pxW, calc.pxH);
+                        
+                        // 6. Elementi Interni (Guide, Barcode)
+                        setupInternalElements(calc, viewW, viewH);
+
+                        // 7. Scala e Posizionamento
+                        const scale = viewW / calc.pxW;
+                        state.paperbackLayout = calc;
+                        state.canvasScale = scale;
+                        
+                        // UI Tools
+                        els.paperbackTools.classList.remove('hidden');
+                        els.spineTools.classList.remove('hidden'); 
+                        els.downloadPrintBtn.classList.remove('hidden');
+
+                        // 8. Migrazione Elementi
+                        if (wasKindle) migrateElementsToPaperback(calc, scale);
+                        
+                        // Rendering Elementi
+                        const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
+                        oldDraggables.forEach(d => d.remove());
+                        state.elements.forEach(el => renderElementDOM(el));
+
+                        // Posiziona Barcode
+                        updateBarcodePosition(calc, viewW, viewH, scale);
+
+                        // Scroll automatico
+                        setTimeout(() => {
+                            els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    });
+                });
+            }
+
+            // Funzione helper per il background
+            function generatePaperbackBackground(calc, pxW, pxH) {
                 const bgCanvas = document.createElement('canvas');
-                bgCanvas.width = calc.pxW; bgCanvas.height = calc.pxH;
+                bgCanvas.width = pxW; bgCanvas.height = pxH;
                 const ctx = bgCanvas.getContext('2d');
                 
                 const frontImg = new Image();
-                
                 frontImg.onload = () => {
-                    // Colori base
                     ctx.fillStyle = els.backColorInput.value; 
-                    ctx.fillRect(0,0, calc.pxW, calc.pxH);
+                    ctx.fillRect(0,0, pxW, pxH);
                     
                     ctx.fillStyle = els.spineColorInput.value;
                     const backCoverWidth = calc.bleedPx + calc.frontPx; 
-                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, calc.pxH);
+                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, pxH);
 
-                    // Calcoli per l'immagine frontale
                     const fx = backCoverWidth + calc.spinePx;
                     const fw = calc.frontPx + calc.bleedPx; 
-                    const fh = calc.pxH; 
+                    const fh = pxH; 
 
                     const imgR = frontImg.width / frontImg.height;
                     const targetR = fw / fh;
@@ -906,7 +953,6 @@
                         dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; 
                     }
                     
-                    // Disegna immagine
                     ctx.save(); 
                     ctx.beginPath(); 
                     ctx.rect(fx, 0, fw, fh); 
@@ -914,14 +960,13 @@
                     ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
                     ctx.restore();
                     
-                    // Applica background
                     els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
                     els.interactiveArea.style.backgroundSize = 'contain'; 
                 };
-                
                 frontImg.src = state.printFrontImage || state.generatedImageB64;
-                
-                // 6. Gestione Elementi Interni (Guide, Barcode)
+            }
+
+            function setupInternalElements(calc, viewW, viewH) {
                 const existingGuides = document.getElementById('guidesOverlay');
                 const existingBarcode = document.getElementById('barcodeArea');
                 const existingSelection = document.getElementById('selectionBox');
@@ -938,69 +983,45 @@
                     drawKDPGuides(calc, viewW, viewH);
                     els.guidesOverlay.classList.remove('hidden');
                 }
+            }
 
-                // 7. Posizionamento Barcode
-                const scale = viewW / calc.pxW;
+            function updateBarcodePosition(calc, viewW, viewH, scale) {
                 const backCoverPanelWidth = calc.bleedPx + calc.frontPx; 
                 const visualBackEnd = backCoverPanelWidth * scale;
                 const visualBarcodeLeft = visualBackEnd - 100; 
                 const visualBottom = viewH - (calc.bleedPx * scale) - 70; 
-                
                 els.barcodeArea.style.left = visualBarcodeLeft + 'px';
                 els.barcodeArea.style.top = visualBottom + 'px';
-
-                // 8. Mostra UI Tools
-                els.paperbackTools.classList.remove('hidden');
-                els.spineTools.classList.remove('hidden'); 
-                els.downloadPrintBtn.classList.remove('hidden');
-                
-                state.paperbackLayout = calc;
-                state.canvasScale = scale;
-                
-                // 9. Migrazione Elementi (se necessario)
-                if (wasKindle) {
-                    const kindleWidth = 400; 
-                    const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
-                    const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
-                    const elementScale = frontCoverVisualWidth / kindleWidth;
-                    
-                    state.elements.forEach(el => {
-                        el.x = (el.x * elementScale) + frontCoverStartX;
-                        el.y = (el.y * elementScale);
-                        let fSize = parseFloat(el.style.fontSize);
-                        el.style.fontSize = (fSize * elementScale) + 'px';
-                        if(el.type === 'shape' || el.type === 'image') {
-                            el.width = el.width * elementScale;
-                            if(el.height) el.height = el.height * elementScale;
-                        }
-                    });
-                }
-                
-                // Pulizia vecchi elementi DOM
-                const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
-                oldDraggables.forEach(d => d.remove());
-                
-                // Rendering nuovi elementi
-                state.elements.forEach(el => renderElementDOM(el));
-
-                // Scroll ai tools
-                setTimeout(() => {
-                    els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
             }
 
-            // ---------------------------------------------------------
-            // 2. LISTENER PER IL RESIZE (FUORI dalla funzione sopra)
-            // ---------------------------------------------------------
-            let resizeTimeout;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    if (state.mode === 'paperback' && state.paperbackLayout) {
-                        initPaperbackMode(); 
+            function migrateElementsToPaperback(calc, scale) {
+                const kindleWidth = 400; 
+                const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
+                const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
+                const elementScale = frontCoverVisualWidth / kindleWidth;
+                
+                state.elements.forEach(el => {
+                    el.x = (el.x * elementScale) + frontCoverStartX;
+                    el.y = (el.y * elementScale);
+                    let fSize = parseFloat(el.style.fontSize);
+                    el.style.fontSize = (fSize * elementScale) + 'px';
+                    if(el.type === 'shape' || el.type === 'image') {
+                        el.width = el.width * elementScale;
+                        if(el.height) el.height = el.height * elementScale;
                     }
-                }, 200);
+                });
+            }
+
+            // FIX: Observer per resize fluido
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    if (state.mode === 'paperback' && state.paperbackLayout) {
+                        // Debounce leggero per performance
+                        requestAnimationFrame(() => initPaperbackMode());
+                    }
+                }
             });
+            resizeObserver.observe(els.previewContainer);
 
             function drawKDPGuides(calc, viewW, viewH) {
                 const guideContainer = els.guidesOverlay;
@@ -1438,7 +1459,6 @@
                 }
             }
 
-            // --- PROFESSIONAL GENERATION FUNCTION ---
             async function generateBaseArtwork() {
                 if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi Titolo e Tema!");
                 
@@ -1488,7 +1508,6 @@
                 }
             }
             
-            // --- MODIFIED RENDER AND DOWNLOAD FUNCTION (PAY-PER-DOWNLOAD) ---
             function renderAndDownload(type) {
                 if (!state.generatedImageB64 && !state.printFrontImage) return alert("Nessun design da esportare!");
 
@@ -1583,11 +1602,11 @@
                                      ctx.textBaseline = 'middle'; ctx.textAlign = el.style.textAlign || 'center';
                                      
                                      if(el.shadowProps) {
-                                           ctx.shadowColor = el.shadowProps.color;
-                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                           const rad = el.shadowProps.angle * (Math.PI/180);
-                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                          ctx.shadowColor = el.shadowProps.color;
+                                          ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                          const rad = el.shadowProps.angle * (Math.PI/180);
+                                          ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                          ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
                                      }
 
                                      let textX = 0; const paddingOffset = 4 * scaleFactor;
@@ -1598,9 +1617,9 @@
                                      ctx.fillText(el.content, textX, 0); 
                                      
                                      if(parseFloat(el.style.webkitTextStrokeWidth) > 0) {
-                                           ctx.strokeStyle = el.style.webkitTextStrokeColor;
-                                           ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
-                                           ctx.strokeText(el.content, textX, 0); 
+                                          ctx.strokeStyle = el.style.webkitTextStrokeColor;
+                                          ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
+                                          ctx.strokeText(el.content, textX, 0); 
                                      }
                                  } else if (el.type === 'image') {
                                      const img = domEl.querySelector('img');
@@ -1608,36 +1627,36 @@
                                  } else if (el.type === 'shape') {
                                      ctx.fillStyle = el.style.color;
                                      if(el.shadowProps) {
-                                           ctx.shadowColor = el.shadowProps.color;
-                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                           const rad = el.shadowProps.angle * (Math.PI/180);
-                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                          ctx.shadowColor = el.shadowProps.color;
+                                          ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                          const rad = el.shadowProps.angle * (Math.PI/180);
+                                          ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                          ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
                                      }
 
                                      if(el.shapeType === 'rect') {
-                                           const r = (el.borderRadius || 0) * scaleFactor;
-                                           ctx.beginPath();
-                                           ctx.moveTo(drawX + r, drawY);
-                                           ctx.lineTo(drawX + scaledW - r, drawY);
-                                           ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
-                                           ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
-                                           ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
-                                           ctx.lineTo(drawX + r, drawY + scaledH);
-                                           ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
-                                           ctx.lineTo(drawX, drawY + r);
-                                           ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
-                                           ctx.closePath();
-                                           ctx.fill();
+                                          const r = (el.borderRadius || 0) * scaleFactor;
+                                          ctx.beginPath();
+                                          ctx.moveTo(drawX + r, drawY);
+                                          ctx.lineTo(drawX + scaledW - r, drawY);
+                                          ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
+                                          ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
+                                          ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
+                                          ctx.lineTo(drawX + r, drawY + scaledH);
+                                          ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
+                                          ctx.lineTo(drawX, drawY + r);
+                                          ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
+                                          ctx.closePath();
+                                          ctx.fill();
                                      }
                                      else if(el.shapeType === 'circle') {
-                                           ctx.beginPath(); ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); ctx.fill();
+                                          ctx.beginPath(); ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); ctx.fill();
                                      } 
                                      else if (el.shapeType === 'triangle') {
-                                           ctx.beginPath(); ctx.moveTo(0, -scaledH/2); ctx.lineTo(drawX + scaledW, drawY + scaledH); ctx.lineTo(drawX, drawY + scaledH); ctx.fill();
+                                          ctx.beginPath(); ctx.moveTo(0, -scaledH/2); ctx.lineTo(drawX + scaledW, drawY + scaledH); ctx.lineTo(drawX, drawY + scaledH); ctx.fill();
                                      }
                                      else {
-                                           ctx.fillRect(drawX, drawY, scaledW, scaledH); 
+                                          ctx.fillRect(drawX, drawY, scaledW, scaledH); 
                                      }
                                  }
                                  ctx.restore();

@@ -652,6 +652,24 @@
                 resetBtn: document.getElementById('resetBtn')
             };
 
+            // --- FIX LAYOUT: ResizeObserver ---
+            // Questo observer ascolta i cambiamenti di dimensione del container grigio
+            // e ricalcola il layout della cover automaticamente.
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    // Usiamo requestAnimationFrame per evitare l'errore "Loop limit exceeded"
+                    // e sincronizzare il rendering con il refresh rate del browser.
+                    requestAnimationFrame(() => {
+                        refreshPaperbackLayout();
+                    });
+                }
+            });
+            
+            // Avvia l'osservazione sul container principale
+            if (els.previewContainer) {
+                resizeObserver.observe(els.previewContainer);
+            }
+
             // --- LOGICA FUNZIONALE (INTATTA) ---
             
             function rgbToHex(r, g, b) {
@@ -821,104 +839,7 @@
                 state.elements.forEach(el => renderElementDOM(el));
             }
 
-            // PATCH 2: initPaperbackMode ASINCRONA
-            function initPaperbackMode() {
-                // 1. Validazione
-                if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
-                
-                // 2. Aggiornamento Stato
-                const wasKindle = (state.mode === 'kindle');
-                state.mode = 'paperback';
-                state.isSelectingArea = false;
-
-                // 3. Reset UI
-                els.selectionBox.style.display = 'none'; 
-                els.selectionControls.classList.add('hidden');
-                els.placeholder.classList.add('hidden');
-                
-                if(els.toggleSelectModeBtn) {
-                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600 hover:bg-pink-500 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
-                }
-
-                // 4. Preparazione Area (Rimuove stili vecchi e mostra il contenitore)
-                els.interactiveArea.style.width = '';
-                els.interactiveArea.style.height = '';
-                els.interactiveArea.classList.remove('hidden');
-                els.canvasInfo.classList.remove('hidden');
-
-                // Mostra i pannelli laterali subito
-                els.paperbackTools.classList.remove('hidden');
-                els.spineTools.classList.remove('hidden'); 
-                els.downloadPrintBtn.classList.remove('hidden');
-
-                // 5. CALCOLO ASINCRONO (Il fix vero e proprio)
-                // Aspettiamo 2 frame per essere sicuri che il browser abbia rimosso 'hidden'
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        
-                        // A. Calcoli Dimensioni Stampa (px reali a 300dpi)
-                        const calc = updatePrintCalculations();
-                        const ratio = calc.pxW / calc.pxH;
-                        
-                        // B. Misura lo spazio disponibile nello schermo dell'utente
-                        const containerPadding = 40; 
-                        const rect = els.previewContainer.getBoundingClientRect();
-                        const availableW = rect.width - containerPadding;
-                        const availableH = rect.height - containerPadding; 
-
-                        if (availableW <= 0 || availableH <= 0) return; // Sicurezza
-
-                        // C. Algoritmo "Contain" (Adatta il rettangolo stampa allo schermo)
-                        let viewW, viewH;
-                        const containerRatio = availableW / availableH;
-
-                        if (ratio > containerRatio) {
-                            viewW = availableW;
-                            viewH = viewW / ratio; // Limitato dalla larghezza
-                        } else {
-                            viewH = availableH;
-                            viewW = viewH * ratio; // Limitato dall'altezza
-                        }
-                        
-                        // D. Applica le dimensioni calcolate al DOM
-                        els.interactiveArea.style.width = viewW + 'px';
-                        els.interactiveArea.style.height = viewH + 'px';
-                        
-                        // E. Info Utente
-                        els.canvasDimensionsDisplay.classList.remove('hidden');
-                        els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>FILE TOTALE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
-                        
-                        // F. Genera lo sfondo (funzione helper che aggiungeremo dopo)
-                        generatePaperbackBackground(calc, calc.pxW, calc.pxH);
-                        
-                        // G. Setup elementi interni (Guide, Barcode)
-                        setupInternalElements(calc, viewW, viewH);
-
-                        // H. Aggiorna stato globale
-                        state.paperbackLayout = calc;
-                        const scale = viewW / calc.pxW;
-                        state.canvasScale = scale;
-                        
-                        // I. Migrazione elementi (se arrivi da Kindle)
-                        if (wasKindle) {
-                            const kindleWidth = 400; 
-                            const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
-                            const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
-                            const elementScale = frontCoverVisualWidth / kindleWidth;
-                            
-                            state.elements.forEach(el => {
-                                el.x = (el.x * elementScale) + frontCoverStartX;
-                                el.y = (el.y * elementScale);
-                                let fSize = parseFloat(el.style.fontSize);
-                                el.style.fontSize = (fSize * elementScale) + 'px';
-                                if(el.type === 'shape' || el.type === 'image') {
-                                    el.width = el.width * elementScale;
-                                    if(el.height) el.height = el.height * elementScale;
-                                }
-                            });
-                        }
-                        // PATCH 3: Helper Functions per Paperback
+            // --- FUNZIONE AUSILIARIA PER PAPERBACK BACKGROUND (Spostata qui) ---
             function generatePaperbackBackground(calc, pxW, pxH) {
                 const bgCanvas = document.createElement('canvas');
                 bgCanvas.width = pxW; bgCanvas.height = pxH;
@@ -967,6 +888,136 @@
                 if(source) frontImg.src = source;
             }
 
+            // --- NUOVA FUNZIONE: Gestisce il ricalcolo del layout Paperback ---
+            function refreshPaperbackLayout() {
+                // Esegui solo se siamo in modalità paperback e gli elementi DOM esistono
+                if (state.mode !== 'paperback' || !els.previewContainer || !els.interactiveArea) return;
+
+                // A. Calcoli Dimensioni Stampa (px reali a 300dpi)
+                const calc = updatePrintCalculations();
+                const ratio = calc.pxW / calc.pxH;
+
+                // B. Misura lo spazio disponibile nello schermo dell'utente
+                // Usa getBoundingClientRect per precisione decimale
+                const rect = els.previewContainer.getBoundingClientRect();
+                const containerPadding = 40; 
+                const availableW = rect.width - containerPadding;
+                const availableH = rect.height - containerPadding; 
+
+                // Sicurezza: se il contenitore è nascosto o troppo piccolo, esci
+                if (availableW <= 0 || availableH <= 0) return;
+
+                // C. Algoritmo "Contain" (Adatta il rettangolo stampa allo schermo)
+                let viewW, viewH;
+                const containerRatio = availableW / availableH;
+
+                if (ratio > containerRatio) {
+                    viewW = availableW;
+                    viewH = viewW / ratio; // Limitato dalla larghezza
+                } else {
+                    viewH = availableH;
+                    viewW = viewH * ratio; // Limitato dall'altezza
+                }
+
+                // D. Applica le dimensioni calcolate al DOM
+                els.interactiveArea.style.width = viewW + 'px';
+                els.interactiveArea.style.height = viewH + 'px';
+
+                // E. Info Utente
+                els.canvasDimensionsDisplay.classList.remove('hidden');
+                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>FILE TOTALE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+
+                // F. Genera lo sfondo
+                generatePaperbackBackground(calc, calc.pxW, calc.pxH);
+
+                // G. Setup elementi interni (Guide, Barcode)
+                setupInternalElements(calc, viewW, viewH);
+
+                // H. Aggiorna stato globale e scala
+                state.paperbackLayout = calc;
+                const newScale = viewW / calc.pxW;
+                state.canvasScale = newScale;
+
+                // Posiziona Barcode visivamente
+                updateBarcodePosition(calc, viewW, viewH, newScale);
+                
+                // Aggiorna le guide se sono attive (perché dipendono dalla scala visiva)
+                if(els.toggleGuides.checked) {
+                    drawKDPGuides(calc, viewW, viewH);
+                }
+            }
+
+            // PATCH 2 FIX: initPaperbackMode (Semplificata e reattiva)
+            function initPaperbackMode() {
+                // 1. Validazione
+                if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
+                
+                // 2. Aggiornamento Stato
+                const wasKindle = (state.mode === 'kindle');
+                state.mode = 'paperback';
+                state.isSelectingArea = false;
+
+                // 3. Reset UI
+                els.selectionBox.style.display = 'none'; 
+                els.selectionControls.classList.add('hidden');
+                els.placeholder.classList.add('hidden');
+                
+                if(els.toggleSelectModeBtn) {
+                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                    els.toggleSelectModeBtn.className = 'w-full bg-pink-600 hover:bg-pink-500 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+                }
+
+                // 4. Preparazione Area
+                els.interactiveArea.classList.remove('hidden');
+                els.canvasInfo.classList.remove('hidden');
+
+                // Mostra i pannelli laterali (questo scatenerà il ResizeObserver!)
+                els.paperbackTools.classList.remove('hidden');
+                els.spineTools.classList.remove('hidden'); 
+                els.downloadPrintBtn.classList.remove('hidden');
+                
+                // 5. Migrazione Elementi (Solo la prima volta che si passa da Kindle a Paperback)
+                if (wasKindle) {
+                     // Forziamo un refresh immediato per settare state.paperbackLayout
+                     refreshPaperbackLayout();
+                     
+                     if (state.paperbackLayout && state.canvasScale) {
+                        const kindleWidth = 400; 
+                        const scale = state.canvasScale;
+                        const calc = state.paperbackLayout;
+                        
+                        const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
+                        const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
+                        const elementScale = frontCoverVisualWidth / kindleWidth;
+                        
+                        state.elements.forEach(el => {
+                            el.x = (el.x * elementScale) + frontCoverStartX;
+                            el.y = (el.y * elementScale);
+                            let fSize = parseFloat(el.style.fontSize);
+                            el.style.fontSize = (fSize * elementScale) + 'px';
+                            
+                            if(el.type === 'shape' || el.type === 'image') {
+                                el.width = el.width * elementScale;
+                                if(el.height) el.height = el.height * elementScale;
+                            }
+                        });
+                        
+                        // Re-render degli elementi DOM nelle nuove posizioni
+                        const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
+                        oldDraggables.forEach(d => d.remove());
+                        state.elements.forEach(el => renderElementDOM(el));
+                     }
+                } else {
+                    // Se eravamo già in paperback o è un refresh, forziamo il layout
+                    refreshPaperbackLayout();
+                }
+
+                // Scroll ai tools
+                setTimeout(() => {
+                    els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+
             function setupInternalElements(calc, viewW, viewH) {
                 if (!els.interactiveArea.contains(els.guidesOverlay)) els.interactiveArea.appendChild(els.guidesOverlay);
                 if (!els.interactiveArea.contains(els.barcodeArea)) els.interactiveArea.appendChild(els.barcodeArea);
@@ -991,21 +1042,7 @@
                 els.barcodeArea.style.left = visualBarcodeLeft + 'px';
                 els.barcodeArea.style.top = visualBottom + 'px';
             }
-                        // J. Rendering Finale
-                        const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
-                        oldDraggables.forEach(d => d.remove());
-                        state.elements.forEach(el => renderElementDOM(el));
 
-                        // Posiziona Barcode visivamente
-                        updateBarcodePosition(calc, viewW, viewH, scale);
-
-                        // Scroll ai tools
-                        setTimeout(() => {
-                            els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                    });
-                });
-            }
             function drawKDPGuides(calc, viewW, viewH) {
                 const guideContainer = els.guidesOverlay;
                 guideContainer.innerHTML = '';
@@ -1536,30 +1573,30 @@
                         
                         const performDraw = (bgImg) => {
                             if (type === 'kindle') {
-                                 const r = bgImg.width / bgImg.height; const tr = targetW / targetH;
-                                 let dw, dh, dx, dy;
-                                 if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
-                                 else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
-                                 ctx.drawImage(bgImg, dx, dy, dw, dh);
+                                     const r = bgImg.width / bgImg.height; const tr = targetW / targetH;
+                                     let dw, dh, dx, dy;
+                                     if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
+                                     else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
+                                     ctx.drawImage(bgImg, dx, dy, dw, dh);
                             } else {
-                                 const calc = updatePrintCalculations();
-                                 ctx.fillStyle = els.backColorInput.value; ctx.fillRect(0,0, targetW, targetH);
-                                 ctx.fillStyle = els.spineColorInput.value;
-                                 const spineStart = calc.bleedPx + calc.frontPx; 
-                                 ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
+                                     const calc = updatePrintCalculations();
+                                     ctx.fillStyle = els.backColorInput.value; ctx.fillRect(0,0, targetW, targetH);
+                                     ctx.fillStyle = els.spineColorInput.value;
+                                     const spineStart = calc.bleedPx + calc.frontPx; 
+                                     ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
 
-                                 const fx = spineStart + calc.spinePx;
-                                 const fw = calc.frontPx + calc.bleedPx; const fh = targetH;
-                                 
-                                 const imgR = bgImg.width / bgImg.height;
-                                 const targetR = fw / fh;
-                                 let dW, dH, dX, dY;
-                                 if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                                 else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
-                                 
-                                 ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
-                                 ctx.drawImage(bgImg, dX, dY, dW, dH);
-                                 ctx.restore();
+                                     const fx = spineStart + calc.spinePx;
+                                     const fw = calc.frontPx + calc.bleedPx; const fh = targetH;
+                                     
+                                     const imgR = bgImg.width / bgImg.height;
+                                     const targetR = fw / fh;
+                                     let dW, dH, dX, dY;
+                                     if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
+                                     else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
+                                     
+                                     ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
+                                     ctx.drawImage(bgImg, dX, dY, dW, dH);
+                                     ctx.restore();
                             }
 
                             state.elements.forEach(el => {

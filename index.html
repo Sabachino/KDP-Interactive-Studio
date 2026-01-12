@@ -2,9 +2,8 @@
 <html lang="it">
 <head>
     <script src="https://js.stripe.com/v3/"></script>
-    
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KDP Cover Designer Pro - Interactive Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -15,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Bebas+Neue&family=Bodoni+Moda&family=Cabin&family=Cinzel&family=Cormorant+Garamond&family=Dancing+Script&family=Great+Vibes&family=Inter:wght@400;700;900&family=Lato&family=Libre+Baskerville&family=Lobster&family=Lora&family=Merriweather&family=Montserrat:wght@400;700;900&family=Nunito&family=Open+Sans&family=Oswald&family=Pacifico&family=Playfair+Display:wght@400;700;900&family=Poppins&family=Quicksand&family=Raleway&family=Roboto&family=Roboto+Condensed&family=Satisfy&family=Source+Sans+Pro&family=Ubuntu&family=Work+Sans&family=Creepster&family=Nosifer&family=Rye&display=swap" rel="stylesheet">
 
     <style>
-        /* FIX LAYOUT: Impedisce lo scroll della pagina intera */
         body { font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
         .banana-loader {
@@ -28,6 +26,7 @@
         optgroup { color: #F59E0B; font-weight: 700; background-color: #111827; }
         option { color: white; background-color: #1F2937; font-weight: normal; }
 
+        /* Custom Text Shadow for Buttons */
         .text-shadow-black { text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); }
         .text-shadow-strong { text-shadow: 2px 2px 4px #000000, 0 0 4px #000000; }
 
@@ -37,13 +36,13 @@
             overflow: hidden;
             user-select: none;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
+            transition: width 0.1s ease-out, height 0.1s ease-out; /* Velocizzato per resize fluido */
             background-color: #1a202c;
-            background-size: cover !important;
+            background-size: 100% 100% !important; /* Forza riempimento esatto per canvas dinamico */
             background-position: center !important;
             background-repeat: no-repeat !important;
-            margin: 0 auto;
-            flex-shrink: 0; /* Cruciale */
+            margin: auto; /* Centratura Flexbox */
+            flex-shrink: 0;
         }
         
         .draggable-item {
@@ -53,33 +52,61 @@
             transform-origin: center center; z-index: 200; line-height: 1.1; 
         }
         .draggable-item:empty { width: 50px; height: 30px; display: inline-block; }
-        .draggable-item:hover, .draggable-item.selected, .draggable-item:focus { border: 1px dashed rgba(255, 255, 255, 0.5) !important; outline: none !important; }
+        .draggable-item:hover, .draggable-item.selected, .draggable-item:focus { 
+            border: 1px dashed rgba(255, 255, 255, 0.5) !important; outline: none !important;
+        }
         .cursor-crosshair { cursor: crosshair !important; }
 
         input[type=range] { -webkit-appearance: none; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #F59E0B; cursor: pointer; margin-top: -5px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #4B5563; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: #F59E0B; cursor: pointer; margin-top: -6px; 
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #4B5563; border-radius: 2px;
+        }
         input[type=range]:disabled::-webkit-slider-thumb { background: #4B5563; cursor: not-allowed; }
 
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .style-btn.active { background-color: #F59E0B; color: #111827; border-color: #F59E0B; }
+
         .toggle-checkbox:checked { right: 0; border-color: #F59E0B; }
         .toggle-checkbox:checked + .toggle-label { background-color: #F59E0B; }
         .toggle-checkbox:checked + .toggle-label:before { transform: translateX(100%); }
-        .toggle-label { width: 32px; height: 18px; background-color: #4B5563; border-radius: 9999px; position: relative; cursor: pointer; transition: background-color 0.2s ease-in-out; }
-        .toggle-label:before { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background-color: white; border-radius: 50%; transition: transform 0.2s ease-in-out; }
+        .toggle-label {
+            width: 36px; height: 20px; background-color: #4B5563; border-radius: 9999px;
+            position: relative; cursor: pointer; transition: background-color 0.2s ease-in-out;
+        }
+        .toggle-label:before {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+            background-color: white; border-radius: 50%; transition: transform 0.2s ease-in-out;
+        }
 
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #111827; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4B5563; }
         
-        #selectionBox { position: absolute; border: 2px dashed #ef4444; background-color: rgba(239, 68, 68, 0.2); pointer-events: none; z-index: 100; display: none; }
-        #barcodeArea { position: absolute; width: 90px; height: 55px; background-color: #ffffff; align-items: center; justify-content: center; z-index: 1000; pointer-events: auto; box-shadow: 0 0 5px rgba(0,0,0,0.3); border: 4px solid white; flexDirection: column; }
-        #barcodeLines { width: 100%; height: 80%; background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px); }
-        #barcodeText { width: 100%; text-align: center; font-family: 'Courier New', monospace; font-size: 8px; color: black; height: 20%; line-height: 10px; background: white; font-weight: bold; }
+        #selectionBox {
+            position: absolute; border: 2px dashed #ef4444; background-color: rgba(239, 68, 68, 0.2);
+            pointer-events: none; z-index: 100; display: none;
+        }
+
+        #barcodeArea {
+            position: absolute; width: 90px; height: 55px; background-color: #ffffff;
+            align-items: center; justify-content: center; z-index: 1000; pointer-events: auto; 
+            box-shadow: 0 0 5px rgba(0,0,0,0.3); border: 4px solid white; flex-direction: column;
+        }
+        #barcodeLines {
+            width: 100%; height: 80%;
+            background-image: repeating-linear-gradient(90deg, #000 0px, #000 2px, #fff 2px, #fff 3px, #000 3px, #000 5px, #fff 5px, #fff 6px, #000 6px, #000 9px, #fff 9px, #fff 11px);
+        }
+        #barcodeText {
+            width: 100%; text-align: center; font-family: 'Courier New', monospace; font-size: 8px;
+            color: black; height: 20%; line-height: 10px; background: white; font-weight: bold;
+        }
 
         #guidesOverlay { position: absolute; inset: 0; pointer-events: none; z-index: 990; }
         .kdp-bleed-zone { position: absolute; background-color: rgba(236, 72, 153, 0.3); z-index: 991; }
@@ -90,80 +117,82 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen selection:bg-yellow-500 selection:text-gray-900">
 
-    <nav class="bg-gray-800 border-b border-gray-700 p-2 flex-none z-50 shadow-lg h-14 flex items-center">
+    <nav class="bg-gray-800 border-b border-gray-700 p-3 flex-none z-50 shadow-lg h-16 flex items-center">
         <div class="w-full px-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-layer-group text-yellow-400 text-xl"></i>
-                <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
+                <i class="fa-solid fa-layer-group text-yellow-400 text-2xl"></i>
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">KDP Interactive Studio</h1>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="text-[10px] font-mono text-gray-400 bg-gray-700 px-2 py-0.5 rounded-full hidden md:block">
-                    <i class="fa-solid fa-pen-ruler mr-1"></i>Design Mode
+            <div class="flex items-center gap-4">
+                <div class="text-xs font-mono text-gray-400 bg-gray-700 px-3 py-1 rounded-full hidden md:block">
+                    <i class="fa-solid fa-pen-ruler mr-2"></i>Design Mode
                 </div>
-                <button id="resetBtn" type="button" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-bold transition-colors flex items-center gap-1 cursor-pointer" title="Resetta tutto">
+                <button id="resetBtn" type="button" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold transition-colors flex items-center gap-2 cursor-pointer" title="Resetta tutto">
                     <i class="fa-solid fa-rotate-right"></i> Reset
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="w-full px-4 py-2 flex flex-row gap-3 flex-1 overflow-hidden h-[calc(100vh-3.5rem)]">
+    <div class="w-full flex flex-row flex-1 overflow-hidden h-[calc(100vh-4rem)]">
         
-        <div class="w-[380px] flex-shrink-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-1 pb-16">
+        <div class="w-[300px] lg:w-[320px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto custom-scrollbar p-4 border-r border-gray-700 bg-gray-900 z-10 pb-20">
             
-            <div class="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300 flex-shrink-0">
-                <h2 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <div class="bg-gray-800 p-5 rounded-xl shadow-lg border border-gray-700 border-l-4 border-l-fuchsia-300 flex-shrink-0">
+                <h2 class="text-base font-semibold mb-3 flex items-center gap-2">
                     <i class="fa-solid fa-brain text-fuchsia-300"></i> 
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-200 to-pink-400">1. Generazione Artwork</span>
                 </h2>
-                <div class="space-y-2">
+                <div class="space-y-3">
                     <div>
-                        <label class="text-[10px] text-gray-400 uppercase font-bold">Titolo Libro</label>
-                        <input type="text" id="titleInput" class="w-full bg-gray-900 border border-gray-600 rounded p-1.5 mt-0.5 text-xs text-white focus:border-yellow-500 outline-none font-bold" placeholder="Es. Pinocchio">
+                        <label class="text-[10px] text-gray-200 uppercase font-bold">Titolo Libro</label>
+                        <input type="text" id="titleInput" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 mt-1 text-xs text-white focus:border-yellow-500 outline-none font-bold" placeholder="Es. Le Avventure di Pinocchio">
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 uppercase font-bold">Tema</label>
-                        <textarea id="mood" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded p-1.5 mt-0.5 text-xs text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto..."></textarea>
+                        <label class="text-[10px] text-gray-200 uppercase font-bold">Tema della Copertina</label>
+                        <textarea id="mood" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 mt-1 text-xs text-white focus:border-yellow-500 outline-none" placeholder="Descrivi il soggetto..."></textarea>
                     </div>
                     <div>
-                        <label class="text-[10px] text-gray-400 uppercase font-bold">Stile</label>
-                        <select id="styleGenre" class="w-full bg-gray-900 border border-gray-600 rounded p-1.5 mt-0.5 text-xs text-white focus:border-yellow-500 outline-none">
-                            <option value="none">Nessuno</option>
-                            <option value="fantasy">Fantasy</option>
-                            <option value="realistic">Realistico</option>
-                            <option value="vintage">Vintage</option>
-                            <option value="business">Business</option>
+                        <label class="text-[10px] text-gray-200 uppercase font-bold">Genere (Stile Artistico)</label>
+                        <select id="styleGenre" class="w-full bg-gray-900 border border-gray-600 rounded-lg p-2 mt-1 text-xs text-white focus:border-yellow-500 outline-none">
+                            <option value="none">Nessuno (usa solo il tema)</option>
+                            <option value="fantasy">Fantasy / Epico</option>
+                            <option value="realistic">Realistico (Fotografico 8K)</option>
+                            <option value="vintage">Vintage (Retrò)</option>
+                            <option value="business">Business (Minimalista)</option>
                             <option value="cinematic">Cinematico</option>
                             <option value="narrative">Narrativa</option>
                         </select>
                     </div>
                     
-                    <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400 text-white text-shadow-black font-bold py-2 px-4 rounded shadow-lg mt-1 transition-all duration-200 transform hover:scale-105 flex justify-center items-center gap-2 text-xs">
+                    <button type="button" id="runAgentsBtn" class="w-full bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-400 hover:to-blue-400 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg mt-1 transition-all duration-200 transform hover:scale-105 flex justify-center items-center gap-2 text-sm">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Genera
                     </button>
                     
-                    <div id="modificationArea" class="hidden mt-2 pt-2 border-t border-gray-700 animate-fade-in bg-gray-900 rounded p-1.5">
-                        <label class="text-[10px] text-yellow-100 uppercase font-bold mb-1 block"><i class="fa-solid fa-paintbrush mr-1"></i>Modifica Globale</label>
-                        <textarea id="modificationPrompt" rows="1" class="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs text-white focus:border-yellow-500 outline-none mb-1" placeholder="Es. Più nebbia..."></textarea>
+                    <p class="text-[10px] text-gray-400 text-center">Richiede connessione API attiva.</p>
+
+                    <div id="modificationArea" class="hidden mt-3 pt-3 border-t border-gray-700 animate-fade-in bg-gray-900 rounded p-2">
+                        <label class="text-[10px] text-yellow-100 uppercase font-bold mb-1 block flex items-center gap-1"><i class="fa-solid fa-paintbrush"></i> Migliora / Modifica Globale</label>
+                        <textarea id="modificationPrompt" rows="2" class="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-xs text-white focus:border-yellow-500 outline-none mb-2" placeholder="Es. Aggiungi più nebbia..."></textarea>
                         
-                        <div class="grid grid-cols-2 gap-1">
-                            <button type="button" id="modifyArtworkBtn" class="bg-purple-500 hover:bg-purple-400 text-white text-shadow-black font-bold py-1 px-2 rounded shadow text-[10px] flex justify-center items-center gap-1">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" id="modifyArtworkBtn" class="w-full bg-purple-500 hover:bg-purple-400 text-white text-shadow-black font-bold py-1.5 px-2 rounded-lg shadow-lg transition-all text-[10px] flex justify-center items-center gap-1">
                                 <i class="fa-solid fa-wand-sparkles"></i> Applica
                             </button>
-                            <button type="button" id="undoBtn" class="bg-gray-600 hover:bg-gray-500 text-white text-shadow-black font-bold py-1 px-2 rounded shadow text-[10px] flex justify-center items-center gap-1">
+                            <button type="button" id="undoBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white text-shadow-black font-bold py-1.5 px-2 rounded-lg shadow-lg transition-all text-[10px] flex justify-center items-center gap-1">
                                 <i class="fa-solid fa-rotate-left"></i> Annulla
                             </button>
                         </div>
 
-                          <div class="mt-2 pt-1 border-t border-gray-700">
-                             <label class="text-[10px] text-yellow-100 uppercase font-bold mb-1 block"><i class="fa-solid fa-eraser mr-1"></i>Modifica Selettiva</label>
-                             <button id="toggleSelectModeBtn" class="w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-[10px] py-1 rounded shadow transition-colors flex items-center justify-center gap-1 font-bold mb-1">
+                          <div class="mt-3 pt-2 border-t border-gray-700">
+                             <label class="text-[10px] text-yellow-100 uppercase font-bold mb-1 block flex items-center gap-1"><i class="fa-solid fa-eraser"></i> Modifica Selettiva</label>
+                             <button id="toggleSelectModeBtn" class="w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-[10px] py-1.5 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2">
                                 <i class="fa-regular fa-square"></i> Definisci Area
                             </button>
                             
-                            <div id="selectionControls" class="hidden space-y-1 animate-fade-in">
-                                <textarea id="selectivePrompt" rows="1" class="w-full bg-gray-800 border border-red-500/50 rounded p-1.5 text-xs text-white focus:border-red-500 outline-none" placeholder="Cosa fare?"></textarea>
-                                <div class="flex gap-1">
+                            <div id="selectionControls" class="hidden space-y-2 animate-fade-in">
+                                <textarea id="selectivePrompt" rows="1" class="w-full bg-gray-800 border border-red-500/50 rounded-lg p-1.5 text-xs text-white focus:border-red-500 outline-none" placeholder="Es. Rimuovi l'albero..."></textarea>
+                                <div class="flex gap-2">
                                     <button id="applySelectiveBtn" class="flex-1 bg-red-600 hover:bg-red-500 text-white py-1 rounded text-[10px] font-bold">Esegui</button>
                                     <button id="cancelSelectBtn" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white py-1 rounded text-[10px]">Annulla</button>
                                 </div>
@@ -171,239 +200,324 @@
                         </div>
                     </div>
                     
-                    <div class="mt-2 pt-2 border-t border-gray-700 flex items-center justify-between">
-                        <label class="text-[9px] uppercase font-bold flex items-center gap-1 text-purple-200">
-                            <i class="fa-solid fa-image"></i> Ref. Img
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <label class="text-[10px] uppercase font-bold mb-1 block flex items-center gap-1 bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-fuchsia-100">
+                            <i class="fa-solid fa-image text-purple-200"></i> Immagine Campione
                         </label>
-                        <div class="flex items-center gap-1">
-                            <label class="cursor-pointer bg-purple-300 hover:bg-purple-200 text-gray-900 px-2 py-0.5 rounded text-[9px] font-bold shadow">
-                                Upload <input type="file" id="styleRefInput" accept="image/*" class="hidden">
+                        <div class="flex items-center gap-2">
+                            <label class="cursor-pointer bg-purple-300 hover:bg-purple-200 text-gray-900 px-3 py-1.5 rounded-lg text-[10px] font-bold shadow transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-upload"></i> Carica
+                                <input type="file" id="styleRefInput" accept="image/*" class="hidden">
                             </label>
-                            <div id="styleRefPreview" class="w-5 h-5 bg-gray-900 rounded border border-gray-600 hidden overflow-hidden">
+                            <div id="styleRefPreview" class="w-8 h-8 bg-gray-900 rounded border border-gray-600 hidden overflow-hidden">
                                 <img id="styleRefImg" class="w-full h-full object-cover">
                             </div>
-                            <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-[10px]"><i class="fa-solid fa-times"></i></button>
+                            <button id="clearStyleRef" class="hidden text-red-400 hover:text-red-300 text-xs"><i class="fa-solid fa-times"></i></button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="designStudio" class="hidden bg-gray-800 p-4 rounded-lg border border-gray-700 border-l-4 border-l-yellow-500 space-y-3 flex-shrink-0">
-                <h2 class="text-sm font-semibold text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-font"></i> 2. Personalizzazione</h2>
+            <div id="designStudio" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-yellow-500 space-y-3 flex-shrink-0">
+                <h2 class="text-base font-semibold text-yellow-400 flex items-center gap-2"><i class="fa-solid fa-font"></i> 2. Personalizzazione</h2>
                 
-                <div class="grid grid-cols-2 gap-1">
-                    <button id="addGenericTextBtn" class="bg-gray-700 hover:bg-gray-600 px-2 py-1.5 rounded font-bold text-white border border-gray-500 shadow-md text-xs flex items-center justify-center gap-1">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="addGenericTextBtn" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg font-bold text-white border border-gray-500 shadow-md transition-all flex items-center justify-center gap-2 text-xs">
                         <i class="fa-solid fa-font text-yellow-400"></i> Testo
                     </button>
                     <div class="flex gap-1">
-                         <button id="addRectBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded border border-gray-500 flex items-center justify-center shadow-md text-xs"><i class="fa-regular fa-square text-orange-400"></i></button>
-                         <button id="addCircleBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded border border-gray-500 flex items-center justify-center shadow-md text-xs"><i class="fa-regular fa-circle text-orange-400"></i></button>
+                         <button id="addRectBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md"><i class="fa-regular fa-square text-orange-400"></i></button>
+                         <button id="addCircleBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md"><i class="fa-regular fa-circle text-orange-400"></i></button>
                     </div>
                 </div>
                 
                 <div class="grid grid-cols-3 gap-1 mt-1">
-                    <button id="addFlagBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded border border-gray-500 shadow-md py-1 text-[10px]" title="Flag"><i class="fa-solid fa-bookmark text-green-400 mr-1"></i> Flag</button>
-                    <button id="addBulletBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded border border-gray-500 shadow-md py-1 text-[10px]" title="Elenco"><i class="fa-solid fa-list-ul text-blue-400 mr-1"></i> Elenco</button>
-                    <button id="addBadgeBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded border border-gray-500 shadow-md py-1 text-[10px]" title="Bollino"><i class="fa-solid fa-certificate text-orange-400 mr-1"></i> Bollino</button>
+                    <button id="addFlagBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-1.5 text-xs" title="Aggiungi Flag/Banner">
+                        <i class="fa-solid fa-bookmark text-green-400 mr-1"></i> Flag
+                    </button>
+                    <button id="addBulletBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-1.5 text-xs" title="Aggiungi Elenco">
+                        <i class="fa-solid fa-list-ul text-blue-400 mr-1"></i> Elenco
+                    </button>
+                    <button id="addBadgeBtn" class="bg-gray-700 hover:bg-gray-600 text-white rounded-lg border border-gray-500 flex items-center justify-center shadow-md py-1.5 text-xs" title="Aggiungi Bollino">
+                        <i class="fa-solid fa-certificate text-orange-400 mr-1"></i> Bollino
+                    </button>
                 </div>
                 
                 <hr class="border-gray-700 my-1">
 
-                <div id="textInspector" class="hidden space-y-2 animate-fade-in bg-gray-900/50 p-2 rounded border border-gray-600">
+                <div id="textInspector" class="hidden space-y-3 animate-fade-in bg-gray-900/50 p-3 rounded-lg border border-gray-600">
                     <div class="flex justify-between items-center mb-1">
-                        <p class="text-[9px] text-yellow-500 font-bold uppercase"><i class="fa-solid fa-sliders mr-1"></i> Modifica</p>
-                        <button id="aiStyleBtn" class="bg-gradient-to-r from-purple-600 to-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded shadow flex items-center gap-1"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
+                        <p class="text-[10px] text-yellow-500 font-bold uppercase"><i class="fa-solid fa-sliders mr-1"></i> Modifica</p>
+                        <button id="aiStyleBtn" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-[9px] px-2 py-0.5 rounded shadow flex items-center gap-1"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</button>
                     </div>
                     
                     <div id="textSpecificControls" class="hidden">
-                        <input type="text" id="selectedTextInput" class="w-full bg-gray-800 border border-gray-600 rounded p-1 text-xs text-white focus:border-yellow-500 outline-none mb-1">
-                        <select id="fontSelector" class="w-full bg-gray-800 border border-gray-600 rounded p-1 text-[10px] text-white mb-1">
-                            <optgroup label="Serif"><option value="'Cinzel', serif">Cinzel</option><option value="'Playfair Display', serif">Playfair</option><option value="'Merriweather', serif">Merriweather</option></optgroup>
-                            <optgroup label="Sans"><option value="'Inter', sans-serif">Inter</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Roboto', sans-serif">Roboto</option></optgroup>
-                            <optgroup label="Display"><option value="'Bebas Neue', cursive">Bebas Neue</option><option value="'Anton', sans-serif">Anton</option><option value="'Creepster', cursive">Creepster</option></optgroup>
-                        </select>
+                        <div class="mb-2">
+                            <input type="text" id="selectedTextInput" class="w-full bg-gray-800 border border-gray-600 rounded p-1.5 text-xs text-white focus:border-yellow-500 outline-none">
+                        </div>
+                        <div class="mb-2">
+                            <select id="fontSelector" class="w-full bg-gray-800 border border-gray-600 rounded p-1 text-xs mt-1 text-white">
+                                <optgroup label="Serif (Eleganti)"><option value="'Cinzel', serif">Cinzel</option><option value="'Playfair Display', serif">Playfair Display</option><option value="'Merriweather', serif">Merriweather</option><option value="'Libre Baskerville', serif">Libre Baskerville</option><option value="'Bodoni Moda', serif">Bodoni Moda</option><option value="'Cormorant Garamond', serif">Cormorant</option></optgroup>
+                                <optgroup label="Sans Serif (Moderni)"><option value="'Inter', sans-serif">Inter</option><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Roboto', sans-serif">Roboto</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Raleway', sans-serif">Raleway</option></optgroup>
+                                <optgroup label="Display & Horror"><option value="'Bebas Neue', cursive">Bebas Neue</option><option value="'Anton', sans-serif">Anton</option><option value="'Abril Fatface', cursive">Abril Fatface</option><option value="'Creepster', cursive">Creepster</option><option value="'Nosifer', cursive">Nosifer</option><option value="'Rye', serif">Rye</option></optgroup>
+                                <optgroup label="Script"><option value="'Great Vibes', cursive">Great Vibes</option><option value="'Dancing Script', cursive">Dancing Script</option><option value="'Pacifico', cursive">Pacifico</option></optgroup>
+                            </select>
+                        </div>
                         
-                        <div class="flex gap-1 mb-1">
-                             <button id="boldBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-0.5 text-[10px] text-white"><i class="fa-solid fa-bold"></i></button>
-                             <button id="italicBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-0.5 text-[10px] text-white"><i class="fa-solid fa-italic"></i></button>
-                             <button id="alignLeftBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-0.5 text-[10px] text-white"><i class="fa-solid fa-align-left"></i></button>
-                             <button id="alignCenterBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-0.5 text-[10px] text-white"><i class="fa-solid fa-align-center"></i></button>
-                             <button id="alignRightBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-0.5 text-[10px] text-white"><i class="fa-solid fa-align-right"></i></button>
+                        <div class="grid grid-cols-4 gap-1 mb-2">
+                             <div class="col-span-2">
+                                 <div class="flex gap-1 mt-1">
+                                     <button id="boldBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-[10px] text-white" title="Grassetto"><i class="fa-solid fa-bold"></i></button>
+                                     <button id="italicBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-[10px] text-white" title="Corsivo"><i class="fa-solid fa-italic"></i></button>
+                                 </div>
+                             </div>
+                             <div class="col-span-2">
+                                <div class="flex gap-1 mt-1">
+                                    <button id="alignLeftBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-[10px] text-white" title="Sinistra"><i class="fa-solid fa-align-left"></i></button>
+                                    <button id="alignCenterBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-[10px] text-white" title="Centro"><i class="fa-solid fa-align-center"></i></button>
+                                    <button id="alignRightBtn" class="style-btn flex-1 bg-gray-800 border border-gray-600 rounded p-1 hover:bg-gray-700 text-[10px] text-white" title="Destra"><i class="fa-solid fa-align-right"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div id="shapeSpecificControls" class="hidden">
-                        <div class="flex items-center justify-between mb-0.5"><label class="text-[9px] text-gray-400">W/H</label></div>
-                        <div class="flex gap-1 mb-1">
-                            <input type="range" id="shapeWidthInput" min="10" max="500" step="5" value="100" class="flex-1">
-                            <input type="range" id="shapeHeightInput" min="10" max="500" step="5" value="100" class="flex-1">
+                        <div class="mb-2">
+                             <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-200 uppercase font-bold">Larghezza</label>
+                                <span id="shapeWidthDisplay" class="text-[10px] text-gray-200">100px</span>
+                             </div>
+                             <input type="range" id="shapeWidthInput" min="10" max="500" step="5" value="100" class="w-full">
                         </div>
-                        <div id="borderRadiusControl" class="mb-1">
-                             <div class="flex items-center justify-between"><label class="text-[9px] text-gray-400">Radius</label></div>
+                        <div class="mb-2">
+                             <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-200 uppercase font-bold">Altezza</label>
+                                <span id="shapeHeightDisplay" class="text-[10px] text-gray-200">100px</span>
+                             </div>
+                             <input type="range" id="shapeHeightInput" min="10" max="500" step="5" value="100" class="w-full">
+                        </div>
+                        <div class="mb-2" id="borderRadiusControl">
+                             <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-200 uppercase font-bold">Arrotondamento</label>
+                                <span id="shapeRadiusDisplay" class="text-[10px] text-gray-200">0px</span>
+                             </div>
                              <input type="range" id="shapeRadiusInput" min="0" max="100" step="1" value="0" class="w-full">
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="text-[9px] text-gray-400 font-bold">Colore</label>
-                        <input type="color" id="colorPicker" class="w-5 h-5 rounded cursor-pointer bg-transparent border-0 p-0" value="#ffffff">
+                    <div class="mb-2">
+                         <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] text-gray-200 uppercase font-bold">Colore</label>
+                            <input type="color" id="colorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#ffffff">
+                         </div>
                     </div>
                     
-                    <div id="opacityControl" class="mb-1 hidden">
-                         <div class="flex justify-between"><label class="text-[9px] text-gray-400">Opacità</label><span id="opacityValue" class="text-[9px] text-gray-400">100%</span></div>
+                    <div id="opacityControl" class="mb-2 hidden">
+                         <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] text-gray-200 uppercase font-bold">Opacità</label>
+                            <span id="opacityValue" class="text-[10px] text-gray-200">100%</span>
+                         </div>
                          <input type="range" id="opacityInput" min="0" max="1" step="0.1" value="1" class="w-full">
                     </div>
 
-                    <div id="textSizeControl" class="mb-1 hidden">
-                         <div class="flex justify-between"><label class="text-[9px] text-gray-400">Size</label><span id="sizeValueDisplay" class="text-[9px] text-gray-400">30px</span></div>
+                    <div id="textSizeControl" class="mb-2 hidden">
+                         <div class="flex items-center justify-between mb-1">
+                            <label class="text-[10px] text-gray-200 uppercase font-bold">Dimensione Testo</label>
+                            <span id="sizeValueDisplay" class="text-[10px] text-gray-200">30px</span>
+                         </div>
                          <input type="range" id="sizeInput" min="5" max="200" step="1" value="30" class="w-full">
                     </div>
 
-                    <div id="textSpacingControl" class="mb-1 hidden"><div class="flex justify-between"><label class="text-[9px] text-gray-400">Space</label><span id="spacingValue" class="text-[9px] text-gray-400">0px</span></div><input type="range" id="spacingInput" min="-10" max="50" step="0.5" value="0" class="w-full"></div>
+                    <div id="textSpacingControl" class="mb-2 hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Spaziatura</label><span id="spacingValue" class="text-[10px] text-gray-200">0px</span></div><input type="range" id="spacingInput" min="-10" max="50" step="0.5" value="0" class="w-full"></div>
                     
-                    <div class="space-y-1 pt-1 border-t border-gray-700">
-                        <div id="textStrokeControl" class="hidden"><div class="flex justify-between items-center"><label class="text-[9px] text-gray-400">Stroke</label><input type="color" id="strokeColorPicker" class="w-4 h-4 rounded bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="strokeWidthInput" min="0" max="5" step="0.1" value="0" class="w-full"></div>
+                    <div class="space-y-2 pt-2 border-t border-gray-700">
+                        <div id="textStrokeControl" class="hidden"><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Contorno</label><input type="color" id="strokeColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="strokeWidthInput" min="0" max="5" step="0.1" value="0" class="w-full"></div>
                         
-                        <div><div class="flex justify-between items-center"><label class="text-[9px] text-gray-400">Shadow</label><input type="color" id="shadowColorPicker" class="w-4 h-4 rounded bg-transparent border-0 p-0" value="#000000"></div><div class="flex gap-1"><input type="range" id="shadowBlurInput" min="0" max="20" class="flex-1"><input type="range" id="shadowOffsetInput" min="0" max="50" class="flex-1"></div></div>
+                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Ombra</label><input type="color" id="shadowColorPicker" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0 p-0" value="#000000"></div><input type="range" id="shadowBlurInput" min="0" max="20" step="0.5" value="0" class="w-full"></div>
+                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Offset</label><span id="offsetValue" class="text-[10px] text-gray-200">2px</span></div><input type="range" id="shadowOffsetInput" min="0" max="50" step="0.5" value="2" class="w-full"></div>
+                        <div><div class="flex items-center justify-between mb-1"><label class="text-[10px] text-gray-200 uppercase font-bold">Angolatura</label><span id="angleValue" class="text-[10px] text-gray-200">45°</span></div><input type="range" id="shadowAngleInput" min="0" max="360" step="15" value="45" class="w-full"></div>
                         
                         <div>
-                            <div class="flex justify-between mb-0.5"><label class="text-[9px] text-gray-400">Ruota</label><span id="rotationValue" class="text-[9px] text-gray-400">0°</span></div>
-                            <div class="flex gap-1 items-center">
-                                <input type="range" id="rotationInput" min="-180" max="180" step="1" value="0" class="flex-1">
-                                <button id="resetRotationBtn" class="bg-gray-700 text-white px-1 rounded text-[8px]">0</button>
-                                <button id="rotateNegative90Btn" class="bg-gray-700 text-white px-1 rounded text-[8px]">-90</button>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-200 uppercase font-bold">Rotazione</label>
+                                <div class="flex items-center gap-1">
+                                    <span id="rotationValue" class="text-[10px] text-gray-200 w-8 text-right mr-1">0°</span>
+                                    <button id="resetRotationBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Orizzontale (0°)">0°</button>
+                                    <button id="rotateNegative90Btn" class="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-[10px]" title="Verticale Spina (-90°)">-90°</button>
+                                </div>
                             </div>
+                            <input type="range" id="rotationInput" min="-180" max="180" step="1" value="0" class="w-full">
                         </div>
                         
-                        <button id="centerElementBtn" class="w-full mt-1 bg-yellow-600 hover:bg-yellow-500 text-white text-[10px] py-1 rounded shadow">Centra</button>
+                        <button id="centerElementBtn" class="w-full mt-2 bg-gradient-to-r from-yellow-400 to-orange-300 hover:from-yellow-300 hover:to-orange-200 text-gray-900 text-xs py-1.5 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold">
+                            <i class="fa-solid fa-align-center"></i> Centra Orizzontalmente
+                        </button>
+                        
                     </div>
-                    <button id="deleteElementBtn" class="w-full mt-2 bg-red-900/50 hover:bg-red-900 text-red-200 text-[10px] py-1 rounded border border-red-800">Elimina</button>
+                    <button id="deleteElementBtn" class="w-full mt-2 bg-red-900/50 hover:bg-red-900 text-red-200 text-[10px] py-1.5 rounded border border-red-800 transition-colors"><i class="fa-solid fa-trash"></i> Elimina Elemento</button>
                 </div>
                 
-                <div id="inspectorPlaceholder" class="text-center py-2 text-gray-500 text-[10px] italic border border-dashed border-gray-700 rounded">Seleziona elemento</div>
+                <div id="inspectorPlaceholder" class="text-center py-4 text-gray-500 text-xs italic border border-dashed border-gray-700 rounded">Seleziona un testo o aggiungine uno vuoto per iniziare</div>
             </div>
 
-             <div id="exportSection" class="hidden bg-gray-800 p-4 rounded-lg border border-gray-700 border-l-4 border-l-green-500 flex-shrink-0">
-                <h2 class="text-sm font-semibold mb-2 flex items-center gap-2">
+             <div id="exportSection" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-green-500 flex-shrink-0">
+                <h2 class="text-base font-semibold mb-2 flex items-center gap-2">
                     <i class="fa-solid fa-file-export text-green-500"></i> 
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600">3. Esporta</span>
                 </h2>
-                <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-shadow-black font-bold py-1.5 px-4 rounded shadow flex items-center justify-center gap-2 text-xs">
-                    <i class="fa-brands fa-amazon"></i> Scarica Kindle HD
+                <button id="downloadKindleBtn" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 transform hover:scale-105 text-sm">
+                    <i class="fa-brands fa-amazon"></i> Scarica Cover Kindle HD
                 </button>
              </div>
 
-            <div id="printSection" class="hidden bg-gray-800 p-4 rounded-lg border border-gray-700 border-l-4 border-l-orange-500 space-y-2 flex-shrink-0">
-                <h2 class="text-sm font-semibold flex items-center gap-2">
+            <div id="printSection" class="hidden bg-gray-800 p-5 rounded-xl border border-gray-700 border-l-4 border-l-orange-500 space-y-3 flex-shrink-0">
+                <h2 class="text-base font-semibold flex items-center gap-2">
                     <i class="fa-solid fa-print text-orange-400"></i> 
-                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">4. Paperback (KDP)</span>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-yellow-500">4. Formato Paperback (KDP)</span>
                 </h2>
                 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                       <div>
-                        <label class="text-[9px] text-gray-400 uppercase font-bold">Trim</label>
-                        <select id="trimSizeInput" class="w-full bg-gray-900 border border-orange-200 rounded p-1 text-[10px] text-white focus:border-orange-500 outline-none">
+                        <label class="text-[10px] text-gray-400 uppercase font-bold">Trim Size</label>
+                        <select id="trimSizeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-1.5 text-xs text-white focus:border-orange-500 outline-none">
                             <option value="5x8">5" x 8"</option>
                             <option value="6x9">6" x 9"</option>
                             <option value="8.5x11" selected>8.5" x 11"</option>
                         </select>
                       </div>
                       <div>
-                        <label class="text-[9px] text-gray-400 uppercase font-bold">Pagine</label>
-                        <input type="number" id="pageCountInput" value="100" min="24" class="w-full bg-gray-900 border border-orange-200 rounded p-1 text-[10px] text-white focus:border-orange-500 outline-none">
+                        <label class="text-[10px] text-gray-400 uppercase font-bold">Pagine</label>
+                        <input type="number" id="pageCountInput" value="100" min="24" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-1.5 text-xs text-white focus:border-orange-500 outline-none">
                       </div>
                 </div>
 
                 <div>
-                      <label class="text-[9px] text-gray-400 uppercase font-bold">Carta</label>
-                      <select id="paperTypeInput" class="w-full bg-gray-900 border border-orange-200 rounded p-1 text-[10px] text-white focus:border-orange-500 outline-none">
-                          <option value="white">Bianca</option>
-                          <option value="cream">Crema</option>
-                          <option value="color">Colori</option>
+                      <label class="text-[10px] text-gray-400 uppercase font-bold">Tipo Carta (Spessore)</label>
+                      <select id="paperTypeInput" class="w-full bg-gray-900 border border-orange-200 rounded-lg p-1.5 text-xs text-white focus:border-orange-500 outline-none">
+                          <option value="white">Carta Bianca (Standard)</option>
+                          <option value="cream">Carta Crema (Cream)</option>
+                          <option value="color">A Colori (Premium)</option>
                       </select>
+                      <p class="text-[9px] text-gray-500 mt-1">*Determina lo spessore esatto del dorso per KDP.</p>
                 </div>
                 
-                <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-shadow-black font-bold py-1.5 px-2 rounded shadow flex items-center justify-center gap-1 text-xs mb-1">
-                    <i class="fa-solid fa-pen-ruler"></i> Crea Layout
+                <button id="initPaperbackBtn" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-shadow-black font-bold py-2 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mb-2 transition-all duration-200 transform hover:scale-105">
+                    <i class="fa-solid fa-pen-ruler"></i> Crea Layout KDP
                 </button>
 
                 <div class="mb-1">
-                    <label class="cursor-pointer w-full bg-gradient-to-r from-yellow-200 to-yellow-400 hover:from-yellow-100 hover:to-yellow-300 text-gray-900 font-bold py-1 px-2 rounded shadow flex items-center justify-center gap-1 text-[10px] transition-colors">
-                        <i class="fa-solid fa-upload"></i> Importa Fronte
+                    <label class="cursor-pointer w-full bg-gradient-to-r from-yellow-200 to-yellow-400 hover:from-yellow-100 hover:to-yellow-300 text-gray-900 font-bold py-1.5 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-xs transition-colors">
+                        <i class="fa-solid fa-upload"></i> Importa Cover Fronte
                         <input type="file" id="importFrontInput" accept="image/*" class="hidden">
                     </label>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-[9px] text-gray-400 uppercase font-bold mb-0.5 block">Spina</label>
-                        <input type="color" id="spineColorInput" class="w-full h-5 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#F59E0B">
+                        <label class="text-[10px] text-gray-400 uppercase font-bold mb-1 block">Colore Spina</label>
+                        <div class="flex gap-2">
+                            <input type="color" id="spineColorInput" class="w-full h-6 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#F59E0B">
+                        </div>
                     </div>
                     <div>
-                        <label class="text-[9px] text-gray-400 uppercase font-bold mb-0.5 block">Retro</label>
-                        <input type="color" id="backColorInput" class="w-full h-5 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#1a202c">
+                        <label class="text-[10px] text-gray-400 uppercase font-bold mb-1 block">Colore Retro</label>
+                        <div class="flex gap-2">
+                            <input type="color" id="backColorInput" class="w-full h-6 bg-gray-900 border border-gray-600 rounded cursor-pointer" value="#1a202c">
+                        </div>
                     </div>
                 </div>
 
-                <div class="p-1.5 bg-gray-900 rounded border border-orange-200 text-[9px] text-gray-400">
-                    <div class="flex justify-between mb-0.5"><span>Dorso:</span> <span id="spineWidthDisplay" class="text-white font-bold">0.23"</span></div>
-                    <div class="flex justify-between mb-0.5"><span>Px:</span> <span id="totalResDisplay" class="text-white font-bold">-</span></div>
+                <div class="p-2 bg-gray-900 rounded border border-orange-200 text-[10px] text-gray-400">
+                    <div class="flex justify-between mb-1"><span>Spessore Dorso:</span> <span id="spineWidthDisplay" class="text-white font-bold">0.23"</span></div>
+                    <div class="flex justify-between mb-1"><span>Totale (px):</span> <span id="totalResDisplay" class="text-white font-bold">-</span></div>
+                    
                     <div class="flex justify-between items-center mt-1 pt-1 border-t border-gray-700">
-                        <span>Barcode</span>
+                        <span>Mostra Barcode</span>
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="toggleBarcode" class="sr-only peer">
-                            <div class="relative w-6 h-3.5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-orange-500"></div>
+                            <div class="relative w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-orange-500"></div>
                         </label>
                     </div>
                     <div class="flex justify-between items-center mt-1">
-                        <span>Guide</span>
+                        <span>Guide Layout KDP</span>
                         <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="toggleGuides" class="sr-only peer">
-                            <div class="relative w-6 h-3.5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-orange-500"></div>
+                            <div class="relative w-7 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-orange-500"></div>
                         </label>
                     </div>
                 </div>
 
-                <div id="spineTools" class="hidden space-y-1.5 pt-2 border-t border-gray-700">
-                    <div class="flex gap-1">
-                        <input type="text" id="spineTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-[10px] text-white px-1" placeholder="Testo Spina">
-                        <button id="addSpineTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-0.5 px-2 rounded text-[10px]"><i class="fa-solid fa-plus"></i></button>
+                <div id="spineTools" class="hidden space-y-2 pt-3 border-t border-gray-700">
+                    <p class="text-[10px] text-orange-200 font-bold uppercase mb-1">TESTO SPINA:</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="spineTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-xs text-white px-2" placeholder="">
+                        <button id="addSpineTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-1 px-2 rounded text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
                     </div>
-                    <button id="centerSpineTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-0.5 rounded text-[9px]">Centra Spina</button>
+                    <button id="centerSpineTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-1 rounded text-[10px] mt-1">
+                        <i class="fa-solid fa-arrows-left-right-to-line"></i> Centra nella Spina
+                    </button>
                     
-                    <div class="flex gap-1 mt-1">
-                        <input type="text" id="backTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-[10px] text-white px-1" placeholder="Testo Retro">
-                        <button id="addBackTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-0.5 px-2 rounded text-[10px]"><i class="fa-solid fa-plus"></i></button>
+                    <p class="text-[10px] text-orange-200 font-bold uppercase mb-1 mt-2">TESTO RETRO:</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="backTextInput" class="flex-1 bg-gray-900 border border-orange-200 rounded text-xs text-white px-2" placeholder="">
+                        <button id="addBackTextBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-1 px-2 rounded text-xs">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
                     </div>
-                    <button id="centerBackTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-0.5 rounded text-[9px]">Centra Retro</button>
+                    <button id="centerBackTextBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-orange-200 py-1 rounded text-[10px] mt-1">
+                        <i class="fa-solid fa-arrows-left-right-to-line"></i> Centra nel Retro
+                    </button>
                 </div>
 
-                <div id="paperbackTools" class="hidden space-y-1.5 pt-2 border-t border-gray-700">
-                    <div class="grid grid-cols-1 gap-1">
-                        <label class="cursor-pointer bg-orange-200 hover:bg-orange-300 text-gray-900 py-1 rounded text-[10px] flex items-center justify-center border border-gray-600">
-                            <i class="fa-solid fa-image mr-1"></i> Immagine Extra
+                <div id="paperbackTools" class="hidden space-y-2 pt-3 border-t border-gray-700">
+                    <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Aggiungi al Layout:</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <label class="cursor-pointer bg-orange-200 hover:bg-orange-300 text-gray-900 py-1.5 rounded text-xs flex items-center justify-center border border-gray-600">
+                            <i class="fa-solid fa-image mr-1"></i> Immagine Extra (Retro)
                             <input type="file" id="addBackImageInput" accept="image/*" class="hidden">
                         </label>
                     </div>
 
-                    <div id="imageInspector" class="hidden space-y-1 bg-gray-900/50 p-1.5 rounded border border-gray-600 mt-1">
-                        <p class="text-[9px] text-yellow-500 font-bold uppercase mb-1">Modifica Immagine</p>
-                        <div class="flex gap-1 items-center"><span class="text-[9px] text-gray-400 w-6">Size</span><input type="range" id="imgSizeInput" min="10" max="800" step="5" value="150" class="flex-1"></div>
-                        <div class="flex gap-1 items-center"><span class="text-[9px] text-gray-400 w-6">Rot</span><input type="range" id="imgRotationInput" min="-180" max="180" step="1" value="0" class="flex-1"></div>
-                        <button id="deleteImageBtn" class="w-full mt-1 bg-red-900/50 hover:bg-red-900 text-red-200 text-[9px] py-0.5 rounded border border-red-800">Elimina</button>
+                    <div id="imageInspector" class="hidden space-y-2 bg-gray-900/50 p-2 rounded border border-gray-600 mt-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="text-[10px] text-yellow-500 font-bold uppercase"><i class="fa-solid fa-image"></i> Modifica Immagine</p>
+                        </div>
+                        
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Dimensione</label>
+                                <span id="imgSizeValue" class="text-[10px] text-gray-500">150</span>
+                            </div>
+                            <input type="range" id="imgSizeInput" min="10" max="800" step="5" value="150" class="w-full">
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="text-[10px] text-gray-400 uppercase font-bold">Rotazione</label>
+                                <span id="imgRotationValue" class="text-[10px] text-gray-500">0°</span>
+                            </div>
+                            <input type="range" id="imgRotationInput" min="-180" max="180" step="1" value="0" class="w-full">
+                        </div>
+
+                        <button id="deleteImageBtn" class="w-full mt-1 bg-red-900/50 hover:bg-red-900 text-red-200 text-[10px] py-1 rounded border border-red-800 transition-colors">
+                            <i class="fa-solid fa-trash"></i> Elimina
+                        </button>
                     </div>
+
                 </div>
                 
-                <button id="downloadPrintBtn" class="w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-400 hover:to-orange-300 text-white text-shadow-strong font-bold py-1.5 px-4 rounded shadow flex items-center justify-center gap-2 text-xs mt-1 hidden transition-all duration-200 transform hover:scale-105">
-                    <i class="fa-solid fa-download"></i> Scarica 300DPI
+                <button id="downloadPrintBtn" class="w-full bg-gradient-to-r from-red-500 to-orange-400 hover:from-red-400 hover:to-orange-300 text-white text-shadow-strong font-bold py-2 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 text-sm mt-2 hidden transition-all duration-200 transform hover:scale-105">
+                    <i class="fa-solid fa-download"></i> Scarica JPG Stampa (300DPI)
                 </button>
             </div>
         </div>
 
-        <div class="flex-1 flex flex-col gap-3 h-full min-w-0 pb-16">
+        <div class="flex-1 flex flex-col gap-4 h-full min-w-0 p-4">
             <div id="previewContainer" class="bg-gray-800 rounded-xl shadow-2xl border border-gray-700 flex flex-col items-center justify-center relative overflow-hidden p-2 flex-1 w-full">
                 <div id="loader" class="hidden absolute inset-0 bg-gray-900/90 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
-                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">la tua cover è in arrivo..........</p>
+                    <div class="banana-loader mb-4"></div><p id="loaderText" class="text-yellow-400 font-mono animate-pulse">L'IA sta dipingendo...</p>
                 </div>
                 <div id="placeholder" class="text-gray-600 text-center"><i class="fa-solid fa-palette text-6xl mb-4 opacity-20"></i><p>Configura lo stile a sinistra e genera la base.</p></div>
                 <div id="interactiveArea" class="hidden shadow-2xl relative bg-black">
@@ -414,25 +528,18 @@
                     <div id="barcodeLines"></div>
                     <div id="barcodeText">ISBN 978-0-00-000000-0</div>
                 </div>
+                
+                <div id="canvasDimensionsDisplay" class="mt-4 text-xs text-orange-200 font-mono text-center hidden p-2 bg-gray-900/50 rounded border border-gray-700"></div>
+                
+                <div id="canvasInfo" class="hidden mt-2 text-xs text-gray-400 flex items-center gap-2"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi. Usa il pannello a sinistra per personalizzarli.</span></div>
             </div>
-            
-            <div id="infoBar" class="h-8 bg-gray-800 rounded-lg border border-gray-700 flex items-center justify-between px-3 flex-shrink-0 shadow-lg">
-                 <div id="canvasDimensionsDisplay" class="text-[10px] text-orange-200 font-mono hidden flex items-center"><i class="fa-solid fa-ruler-combined mr-2"></i><span>-</span></div>
-                 <div id="canvasInfo" class="hidden text-[10px] text-gray-400 flex items-center gap-2 ml-auto"><i class="fa-solid fa-mouse-pointer text-yellow-500"></i><span>Clicca e trascina i testi.</span></div>
-            </div>
-            
             <canvas id="exportCanvas" class="hidden"></canvas>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- CONFIGURAZIONE ---
-            const NANO_BANANA_API_KEY = "YOUR_PROFESSIONAL_KEY_HERE"; 
-            const NANO_BANANA_ENDPOINT = "https://api.nanobanana.com/v1/generate"; 
-            const stripe = Stripe('pk_test_YOUR_STRIPE_PUBLIC_KEY'); 
-
-            // --- STATO ---
+            const apiKey = "AIzaSyDrxA7ckKRgL5T5ga0KGzEVF7BUOjcW4OE"; 
             const state = { 
                 mode: 'kindle', 
                 generatedImageB64: null, 
@@ -442,16 +549,16 @@
                 elements: [], 
                 selectedElementId: null, 
                 idCounter: 0, 
-                canvasScale: 1, 
+                canvasScale: 1,
                 paperbackLayout: null,
                 pickingColor: null,
                 isSelectingArea: false,
                 selectionStart: { x: 0, y: 0 },
                 selectionRect: null,
-                lastActiveMode: 'kindle'
+                lastActiveMode: 'kindle' // Track the mode before selection
             };
             
-            // --- RIFERIMENTI DOM ---
+            // --- ELEMENT REFERENCES ---
             const els = {
                 titleInput: document.getElementById('titleInput'), 
                 mood: document.getElementById('mood'),
@@ -485,8 +592,8 @@
                 spineColorInput: document.getElementById('spineColorInput'),
                 backColorInput: document.getElementById('backColorInput'),
                 spineWidthDisplay: document.getElementById('spineWidthDisplay'),
-                totalResDisplay: document.getElementById('totalResDisplay'), 
-                canvasDimensionsDisplay: document.getElementById('canvasDimensionsDisplay'), 
+                totalResDisplay: document.getElementById('totalResDisplay'), // Settings panel display
+                canvasDimensionsDisplay: document.getElementById('canvasDimensionsDisplay'), // New Bottom display
                 addGenericTextBtn: document.getElementById('addGenericTextBtn'),
                 textInspector: document.getElementById('textInspector'),
                 imageInspector: document.getElementById('imageInspector'), 
@@ -565,16 +672,36 @@
                 resetBtn: document.getElementById('resetBtn')
             };
 
-            // --- LOGICA FUNZIONALE (INTATTA) ---
+            // --- FIX LAYOUT: ResizeObserver ---
+            // Questo observer ascolta i cambiamenti di dimensione del container grigio
+            // e ricalcola il layout della cover automaticamente.
+            const resizeObserver = new ResizeObserver(entries => {
+                for (let entry of entries) {
+                    // Usiamo requestAnimationFrame per evitare l'errore "Loop limit exceeded"
+                    // e sincronizzare il rendering con il refresh rate del browser.
+                    requestAnimationFrame(() => {
+                        refreshPaperbackLayout();
+                    });
+                }
+            });
+            
+            // Avvia l'osservazione sul container principale
+            if (els.previewContainer) {
+                resizeObserver.observe(els.previewContainer);
+            }
+
+            // --- FUNCTIONS ---
             
             function rgbToHex(r, g, b) {
                 if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
                 return ((r << 16) | (g << 8) | b).toString(16);
             }
             
+            // RESET MANUALE ("Soft Reset")
             function performReset() {
                  if(!confirm('Sei sicuro di voler resettare tutto e ricominciare da zero?')) return;
                  
+                 // 1. Reset Variabili di Stato
                  state.mode = 'kindle';
                  state.generatedImageB64 = null;
                  state.originalImageB64 = null;
@@ -589,6 +716,7 @@
                  state.isSelectingArea = false;
                  state.selectionRect = null;
                  
+                 // 2. Pulisci Campi Input
                  if(els.titleInput) els.titleInput.value = '';
                  if(els.mood) els.mood.value = '';
                  if(els.styleGenre) els.styleGenre.value = 'none';
@@ -600,19 +728,23 @@
                  if(els.importFrontInput) els.importFrontInput.value = '';
                  if(els.addBackImageInput) els.addBackImageInput.value = '';
                  
+                 // 3. Reset Switch
                  if(els.toggleBarcode) els.toggleBarcode.checked = false;
                  if(els.toggleGuides) els.toggleGuides.checked = false;
                  
+                 // 4. Reset Viste e UI
                  if(els.interactiveArea) {
                     els.interactiveArea.innerHTML = ''; 
                     els.interactiveArea.style.backgroundImage = '';
                     els.interactiveArea.classList.add('hidden');
+                    // Re-inject permanent overlays hidden
                     els.interactiveArea.appendChild(els.guidesOverlay);
                     els.interactiveArea.appendChild(els.barcodeArea);
                     els.interactiveArea.appendChild(els.selectionBox);
                  }
                  if(els.placeholder) els.placeholder.classList.remove('hidden');
                  
+                 // 5. Nascondi Pannelli
                  if(els.modificationArea) els.modificationArea.classList.add('hidden');
                  if(els.designStudio) els.designStudio.classList.add('hidden');
                  if(els.printSection) els.printSection.classList.add('hidden');
@@ -629,16 +761,55 @@
                  if(els.selectionBox) els.selectionBox.style.display = 'none';
                  if(els.styleRefPreview) els.styleRefPreview.classList.add('hidden');
                  if(els.clearStyleRef) els.clearStyleRef.classList.add('hidden');
-                 if(els.canvasInfo) els.canvasInfo.classList.add('hidden');
                  
+                 // 6. Reset Bottone Selezione
                  if(els.toggleSelectModeBtn) {
-                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                    els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
                     els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
                  }
             }
 
             async function applyAiStyle() {
-                alert("Configura la API Key Google Gemini nel codice per usare questa funzione.");
+                if (!state.selectedElementId) return; 
+                const btn = els.aiStyleBtn; 
+                const originalText = btn.innerHTML; 
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                
+                const el = state.elements.find(e => e.id === state.selectedElementId);
+                const fontOptions = Array.from(els.fontSelector.querySelectorAll('option')).map(opt => opt.text);
+                const prompt = `
+                    Analyze the context. Title/Text: "${el.content || 'Text'}". Mood/Theme: "${els.mood.value}". 
+                    Available Fonts: ${fontOptions.join(', ')}.
+                    Task: Select the best font from the list, a suitable text color (hex), and a stroke color (hex) to match the mood.
+                    Return ONLY a JSON object with keys: "font" (exact name from list), "color", "strokeColor".
+                `;
+
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: prompt }] }], 
+                            generationConfig: { responseMimeType: "application/json" } 
+                        }) 
+                    }); 
+                    
+                    const d = await res.json(); 
+                    if (!d.candidates || !d.candidates[0].content) throw new Error("No response");
+
+                    const jsonText = d.candidates[0].content.parts[0].text;
+                    const s = JSON.parse(jsonText);
+                    
+                    if(s.color) { els.colorPicker.value = s.color; updateSelectedStyle('color', s.color); }
+                    if(s.strokeColor) { els.strokeColorPicker.value = s.strokeColor; updateSelectedStyle('webkitTextStrokeColor', s.strokeColor); }
+                    if(s.font) { 
+                        const options = Array.from(els.fontSelector.querySelectorAll('option'));
+                        const match = options.find(opt => opt.text.toLowerCase() === s.font.toLowerCase());
+                        if(match) { els.fontSelector.value = match.value; updateSelectedStyle('fontFamily', match.value); }
+                    }
+                    
+                } catch(e) { console.error(e); alert("Impossibile applicare lo stile AI al momento."); } 
+                finally { btn.innerHTML = originalText; }
             }
 
             function updateShadow() {
@@ -672,19 +843,23 @@
                 }
             }
 
+            // MODIFIED FOR KDP COMPLIANCE (PROFESSIONAL CALCULATIONS)
             function updatePrintCalculations() {
                 const [w, h] = els.trimSizeInput.value.split('x').map(parseFloat);
                 const pages = parseInt(els.pageCountInput.value) || 100;
                 const paperType = els.paperTypeInput.value;
 
+                // KDP SPINE COEFFICIENTS (EXACT VALUES)
                 let paperThickness = 0.002252; // White (Standard)
                 if (paperType === 'cream') paperThickness = 0.0025;
                 else if (paperType === 'color') paperThickness = 0.002347;
 
                 const spine = pages * paperThickness; 
-                const bleed = 0.125; 
+                const bleed = 0.125; // Standard KDP Bleed
                 
+                // Full Cover Width: Bleed + Back(w) + Spine + Front(w) + Bleed
                 const totalW_inch = bleed + w + spine + w + bleed;
+                // Full Cover Height: Bleed + Height + Bleed
                 const totalH_inch = bleed + h + bleed;
                 
                 const dpi = 300;
@@ -698,15 +873,24 @@
                     els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${pxW} x ${pxH} px</b> (300 DPI)`;
                 }
 
-                return { pxW, pxH, frontPx: w*dpi, spinePx: spine*dpi, bleedPx: bleed*dpi, trimW: w, trimH: h, spineInch: spine };
+                return { 
+                    pxW, 
+                    pxH, 
+                    frontPx: w*dpi, 
+                    spinePx: spine*dpi, 
+                    bleedPx: bleed*dpi,
+                    trimW: w,
+                    trimH: h,
+                    spineInch: spine
+                };
             }
 
             function initKindleCanvas() {
                 state.mode = 'kindle';
                 state.isSelectingArea = false;
-                els.selectionBox.style.display = 'none';
+                els.selectionBox.style.display = 'none'; 
                 els.selectionControls.classList.add('hidden');
-                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
+                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
                 els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
 
                 els.interactiveArea.style.width = '400px';
@@ -734,108 +918,165 @@
                 state.elements.forEach(el => renderElementDOM(el));
             }
 
-            function initPaperbackMode() {
-                if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
-                
-                const wasKindle = (state.mode === 'kindle');
-                state.mode = 'paperback';
-                state.isSelectingArea = false;
-                els.selectionBox.style.display = 'none'; 
-                els.selectionControls.classList.add('hidden');
-                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area';
-                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+            // --- NUOVE FUNZIONI DI SUPPORTO PER IL LAYOUT ---
 
-                const calc = updatePrintCalculations();
-                const ratio = calc.pxW / calc.pxH;
-                
-                // --- FIX LOGIC: FIT TO SCREEN (SCALE TO FIT) ---
-                // Calcola l'altezza disponibile reale nel contenitore padre, sottraendo padding e status bar
-                const maxW = els.previewContainer.clientWidth - 16;
-                const maxH = els.previewContainer.clientHeight - 16; 
-
-                // 1. Calcola larghezza ipotetica basata sul contenitore
-                let viewW = maxW;
-                let viewH = viewW / ratio;
-
-                // 2. Se l'altezza supera il limite visibile, ridimensiona basandosi sull'altezza
-                if (viewH > maxH) {
-                    viewH = maxH;
-                    viewW = viewH * ratio;
-                }
-                // --- END FIX ---
-                
-                els.interactiveArea.style.width = viewW + 'px';
-                els.interactiveArea.style.height = viewH + 'px';
-                
-                els.canvasDimensionsDisplay.classList.remove('hidden');
-                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
-                
+            function generatePaperbackBackground(calc, pxW, pxH) {
                 const bgCanvas = document.createElement('canvas');
-                bgCanvas.width = calc.pxW; bgCanvas.height = calc.pxH;
+                bgCanvas.width = pxW; bgCanvas.height = pxH;
                 const ctx = bgCanvas.getContext('2d');
                 
                 const frontImg = new Image();
+                frontImg.crossOrigin = "Anonymous";
+                
                 frontImg.onload = () => {
                     ctx.fillStyle = els.backColorInput.value; 
-                    ctx.fillRect(0,0, calc.pxW, calc.pxH);
+                    ctx.fillRect(0,0, pxW, pxH);
                     
                     ctx.fillStyle = els.spineColorInput.value;
                     const backCoverWidth = calc.bleedPx + calc.frontPx; 
-                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, calc.pxH);
+                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, pxH);
 
                     const fx = backCoverWidth + calc.spinePx;
                     let dW, dH, dX, dY;
                     const fw = calc.frontPx + calc.bleedPx; 
-                    const fh = calc.pxH; 
+                    const fh = pxH; 
 
                     const imgR = frontImg.width / frontImg.height;
                     const targetR = fw / fh;
                     
-                    if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                    else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
+                    if (imgR > targetR) { 
+                        dH = fh; 
+                        dW = fh * imgR; 
+                        dX = fx + (fw - dW)/2; 
+                        dY = 0; 
+                    } else { 
+                        dW = fw; 
+                        dH = fw / imgR; 
+                        dX = fx; 
+                        dY = (fh - dH)/2; 
+                    }
                     
-                    ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
+                    ctx.save(); 
+                    ctx.beginPath(); 
+                    ctx.rect(fx, 0, fw, fh); 
+                    ctx.clip();
                     ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
                     ctx.restore();
                     
                     els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
-                    els.interactiveArea.style.backgroundSize = 'contain';
+                    els.interactiveArea.style.backgroundSize = '100% 100%';
                 };
                 frontImg.src = state.printFrontImage || state.generatedImageB64;
-                
-                els.interactiveArea.innerHTML = '';
-                els.interactiveArea.appendChild(els.guidesOverlay); 
-                els.interactiveArea.appendChild(els.barcodeArea); 
-                els.interactiveArea.appendChild(els.selectionBox); 
-                
-                els.guidesOverlay.classList.add('hidden');
-                els.barcodeArea.classList.add('hidden');
-                
-                if(els.toggleBarcode.checked) els.barcodeArea.classList.remove('hidden');
-                if(els.toggleGuides.checked) {
-                    drawKDPGuides(calc, viewW, viewH);
-                    els.guidesOverlay.classList.remove('hidden');
-                }
+            }
 
-                // *** BARCODE POSITION LOGIC ***
-                const scale = viewW / calc.pxW;
-                const marginInch = 0.35; 
+            function updateBarcodePosition(calc, viewW, viewH, scale) {
+                // Width of the Back Cover panel (including bleed on the left edge)
                 const backCoverPanelWidth = calc.bleedPx + calc.frontPx; 
+                
+                // Recalculate based on fixed visual px for better UX
                 const visualBackEnd = backCoverPanelWidth * scale;
                 const visualBarcodeLeft = visualBackEnd - 100; // 90px width + 10px padding
                 const visualBottom = viewH - (calc.bleedPx * scale) - 70; // 55px height + 15px padding
                 
                 els.barcodeArea.style.left = visualBarcodeLeft + 'px';
                 els.barcodeArea.style.top = visualBottom + 'px';
+            }
 
+            // --- NUOVA FUNZIONE: GESTORE LAYOUT REATTIVO ---
+            function refreshPaperbackLayout() {
+                // Esegui solo se siamo in modalità paperback e gli elementi DOM esistono
+                if (state.mode !== 'paperback' || !els.previewContainer || !els.interactiveArea) return;
+
+                // A. Calcoli Dimensioni Stampa (px reali a 300dpi)
+                const calc = updatePrintCalculations();
+                const ratio = calc.pxW / calc.pxH;
+
+                // B. Misura lo spazio disponibile nello schermo dell'utente
+                // Sottraiamo il padding del container (p-8 = 2rem ~ 32px per lato -> 64px tot)
+                const containerW = els.previewContainer.clientWidth - 64; 
+                const containerH = els.previewContainer.clientHeight - 64; // Se volessi limitare anche in altezza
+
+                // C. Calcolo Width/Height visuali
+                let viewW = containerW;
+                let viewH = viewW / ratio;
+
+                // Se l'altezza calcolata è maggiore di quella disponibile (opzionale, ma evita scroll verticale eccessivo)
+                // In questo caso particolare il layout è verticale, quindi width-first va bene, 
+                // ma per sicurezza si può aggiungere logica "contain":
+                /*
+                if (viewH > containerH && containerH > 0) {
+                    viewH = containerH;
+                    viewW = viewH * ratio;
+                }
+                */
+                
+                // D. Applica le dimensioni
+                els.interactiveArea.style.width = viewW + 'px';
+                els.interactiveArea.style.height = viewH + 'px';
+                
+                // E. Info e Aggiornamenti
+                els.canvasDimensionsDisplay.classList.remove('hidden');
+                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+                
+                // F. Genera sfondo
+                generatePaperbackBackground(calc, calc.pxW, calc.pxH);
+
+                // G. Aggiorna stato scala globale
+                state.paperbackLayout = calc;
+                const newScale = viewW / calc.pxW;
+                state.canvasScale = newScale;
+
+                // H. Elementi Interni
+                updateBarcodePosition(calc, viewW, viewH, newScale);
+                
+                if(els.toggleGuides.checked) {
+                    drawKDPGuides(calc, viewW, viewH);
+                }
+            }
+
+            function initPaperbackMode() {
+                // 1. Validazione
+                if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
+                
+                // 2. Cambio Stato
+                const wasKindle = (state.mode === 'kindle');
+                state.mode = 'paperback';
+                state.isSelectingArea = false;
+
+                // 3. UI Reset
+                els.selectionBox.style.display = 'none'; 
+                els.selectionControls.classList.add('hidden');
+                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
+                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+
+                // 4. Mostra Pannelli
+                els.interactiveArea.classList.remove('hidden');
+                els.canvasInfo.classList.remove('hidden');
                 els.paperbackTools.classList.remove('hidden');
                 els.spineTools.classList.remove('hidden'); 
                 els.downloadPrintBtn.classList.remove('hidden');
-                state.paperbackLayout = calc;
-                state.canvasScale = scale;
                 
+                // 5. Check Barcode
+                if(els.barcodeArea.parentNode) els.barcodeArea.remove(); 
+                els.interactiveArea.appendChild(els.barcodeArea); // Ensure it's inside interactiveArea
+                els.barcodeArea.classList.add('hidden');
+                if(els.toggleBarcode.checked) els.barcodeArea.classList.remove('hidden');
+
+                // 6. Check Guides
+                if(els.guidesOverlay) els.guidesOverlay.classList.add('hidden');
+                if(els.toggleGuides.checked) els.guidesOverlay.classList.remove('hidden');
+
+                // 7. Esegui PRIMO Calcolo (Manuale)
+                // Necessario per avere i dati 'calc' e 'scale' corretti PRIMA di migrare gli elementi
+                // Altrimenti state.canvasScale potrebbe essere vecchio
+                refreshPaperbackLayout();
+
+                // 8. Migrazione Elementi (Solo la prima volta che si passa da Kindle a Paperback)
                 if (wasKindle) {
+                    const calc = state.paperbackLayout;
+                    const scale = state.canvasScale;
                     const kindleWidth = 400;
+                    
                     const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
                     const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
                     const elementScale = frontCoverVisualWidth / kindleWidth;
@@ -852,29 +1093,39 @@
                     });
                 }
                 
+                // 9. Rendering Finale Elementi
+                // Rimuovi vecchi per evitare duplicati visivi se necessario, poi ridisegna
+                const oldDraggables = els.interactiveArea.querySelectorAll('.draggable-item');
+                oldDraggables.forEach(d => d.remove());
                 state.elements.forEach(el => renderElementDOM(el));
 
+                // 10. Scroll
                 setTimeout(() => {
                     els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             }
 
+            // --- IMPROVED GUIDE DRAWING FUNCTION ---
             function drawKDPGuides(calc, viewW, viewH) {
                 const guideContainer = els.guidesOverlay;
                 guideContainer.innerHTML = '';
                 
                 const scale = viewW / calc.pxW;
-                const bleed = calc.bleedPx * scale;
-                const safe = (0.25 * 300) * scale;
+                const bleed = calc.bleedPx * scale; // 0.125" scaled
+                const safe = (0.25 * 300) * scale; // 0.25" safe margin scaled
                 const spineStart = (calc.bleedPx + calc.frontPx) * scale;
                 const spineWidth = calc.spinePx * scale;
                 
+                // 1. TRIM LINES (Black Dashed - Where the cut happens)
                 const trimBox = document.createElement('div');
                 trimBox.className = 'kdp-trim-line';
-                trimBox.style.left = bleed + 'px'; trimBox.style.top = bleed + 'px';
-                trimBox.style.width = (viewW - (bleed * 2)) + 'px'; trimBox.style.height = (viewH - (bleed * 2)) + 'px';
+                trimBox.style.left = bleed + 'px';
+                trimBox.style.top = bleed + 'px';
+                trimBox.style.width = (viewW - (bleed * 2)) + 'px';
+                trimBox.style.height = (viewH - (bleed * 2)) + 'px';
                 guideContainer.appendChild(trimBox);
                 
+                // 2. BLEED ZONES (Pink Overlay - Area to be cut off)
                 const topBleed = document.createElement('div'); topBleed.className = 'kdp-bleed-zone';
                 topBleed.style.top = '0'; topBleed.style.left = '0'; topBleed.style.width = '100%'; topBleed.style.height = bleed + 'px';
                 guideContainer.appendChild(topBleed);
@@ -891,14 +1142,19 @@
                 rightBleed.style.top = bleed+'px'; rightBleed.style.right = '0'; rightBleed.style.width = bleed + 'px'; rightBleed.style.height = (viewH - bleed*2) + 'px';
                 guideContainer.appendChild(rightBleed);
 
+                // 3. SPINE FOLDS (Dashed Red Lines)
                 const spineFold = document.createElement('div');
                 spineFold.className = 'kdp-spine-fold';
-                spineFold.style.left = spineStart + 'px'; spineFold.style.top = '0px'; spineFold.style.width = spineWidth + 'px';
+                spineFold.style.left = spineStart + 'px';
+                spineFold.style.top = '0px';
+                spineFold.style.width = spineWidth + 'px';
                 guideContainer.appendChild(spineFold);
 
+                // 4. SAFE ZONES (Red Dashed - Text must be inside)
                 const backSafe = document.createElement('div');
                 backSafe.className = 'kdp-safe-zone';
-                backSafe.style.left = (bleed + safe) + 'px'; backSafe.style.top = (bleed + safe) + 'px';
+                backSafe.style.left = (bleed + safe) + 'px';
+                backSafe.style.top = (bleed + safe) + 'px';
                 const spineSafeMargin = (0.0625 * 300) * scale;
                 backSafe.style.width = (spineStart - (bleed + safe) - spineSafeMargin) + 'px';
                 backSafe.style.height = (viewH - (bleed * 2) - (safe * 2)) + 'px';
@@ -922,7 +1178,11 @@
                 };
                 if(type === 'image') { el.width = 150; el.src = content; }
                 else if (type === 'shape') { 
-                    el.width = 100; el.height = 100; el.shapeType = content; el.style.color = '#F59E0B'; el.borderRadius = 0;
+                    el.width = 100; 
+                    el.height = 100; 
+                    el.shapeType = content; 
+                    el.style.color = '#F59E0B'; 
+                    el.borderRadius = 0; // Initialize borderRadius
                 }
                 
                 state.elements.push(el); renderElementDOM(el); selectElement(id);
@@ -940,7 +1200,11 @@
                  const domEl = document.getElementById(id);
                  
                  if(el && domEl) {
-                     el.style.fontSize = 12; el.style.fontWeight = 'normal'; domEl.style.fontSize = '12px'; domEl.style.fontWeight = 'normal'; selectElement(id);
+                     el.style.fontSize = 12; 
+                     el.style.fontWeight = 'normal';
+                     domEl.style.fontSize = '12px';
+                     domEl.style.fontWeight = 'normal';
+                     selectElement(id);
                  }
                  
                  const layout = state.paperbackLayout || updatePrintCalculations();
@@ -954,7 +1218,8 @@
                  setTimeout(() => {
                      const dom = document.getElementById(id);
                      if(dom) {
-                        const w = dom.offsetWidth; const h = dom.offsetHeight; 
+                        const w = dom.offsetWidth; 
+                        const h = dom.offsetHeight; 
                         updateElementById(id, 'x', spineCenterX - (w/2));
                         updateElementById(id, 'y', spineCenterY - (h/2));
                      }
@@ -1037,14 +1302,21 @@
                     div.style.height = (el.height || el.width) + 'px'; 
                     
                     if (el.shapeType === 'triangle') {
-                        div.style.backgroundColor = 'transparent'; div.style.width = '0'; div.style.height = '0'; 
+                        div.style.backgroundColor = 'transparent'; 
+                        div.style.width = '0'; 
+                        div.style.height = '0'; 
                         div.style.borderLeft = (el.width/2) + 'px solid transparent';
                         div.style.borderRight = (el.width/2) + 'px solid transparent';
                         div.style.borderBottom = (el.height || el.width) + 'px solid ' + el.style.color;
                         div.style.borderRadius = '0';
                     } else if (el.shapeType === 'badge') {
                         div.style.backgroundColor = el.style.color;
-                        const points = []; const spikes = 40; const outer = 50; const inner = 45; const cx = 50; const cy = 50;
+                        const points = [];
+                        const spikes = 40;
+                        const outer = 50;
+                        const inner = 45; 
+                        const cx = 50;
+                        const cy = 50;
                         for(let i=0; i<spikes*2; i++){
                             const r = (i%2 === 0) ? outer : inner;
                             const angle = (Math.PI * i) / spikes;
@@ -1059,11 +1331,17 @@
                         div.style.clipPath = 'polygon(0% 0%, 100% 0%, 80% 50%, 100% 100%, 0% 100%)';
                         div.style.borderRadius = '0';
                     } else if (el.shapeType === 'bullet') {
-                        div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.justifyContent = 'center'; 
+                        div.style.display = 'flex';
+                        div.style.alignItems = 'center';
+                        div.style.justifyContent = 'center'; // Center bullet if single
                         const icon = document.createElement('div');
-                        icon.style.width = '20px'; icon.style.height = '20px'; icon.style.borderRadius = '50%';
-                        icon.style.backgroundColor = el.style.color; icon.style.flexShrink = '0';
+                        icon.style.width = '20px';
+                        icon.style.height = '20px';
+                        icon.style.borderRadius = '50%';
+                        icon.style.backgroundColor = el.style.color; 
+                        icon.style.flexShrink = '0';
                         icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                        // Removed placeholder line div
                         div.appendChild(icon);
                         div.style.backgroundColor = 'transparent';
                     } else {
@@ -1100,8 +1378,11 @@
                     });
                     
                     let size = el.style.fontSize;
-                    if (typeof size === 'string' && size.includes('px')) { div.style.fontSize = size; } 
-                    else { div.style.fontSize = size + 'px'; }
+                    if (typeof size === 'string' && size.includes('px')) {
+                        div.style.fontSize = size;
+                    } else {
+                        div.style.fontSize = size + 'px';
+                    }
                     div.innerText = el.content;
                 } else if (el.type === 'image') {
                     const img = div.querySelector('img');
@@ -1193,6 +1474,7 @@
                         els.shapeHeightInput.value = el.height || el.width; els.shapeHeightDisplay.innerText = (el.height || el.width) + 'px';
                         const angle = el.shadowProps ? el.shadowProps.angle : 45; els.shadowAngleInput.value = angle; els.angleValue.innerText = angle + '°';
 
+                        // Show/Hide Border Radius Control specifically for Rectangles
                         if(el.shapeType === 'rect') {
                             els.borderRadiusControl.classList.remove('hidden');
                             els.shapeRadiusInput.value = el.borderRadius || 0;
@@ -1295,132 +1577,178 @@
                 }
             }
 
-            // --- PROFESSIONAL GENERATION FUNCTION ---
+            // ... (Other functions kept same)
             async function generateBaseArtwork() {
-                if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi Titolo e Tema!");
-                
+                if(!els.titleInput.value || !els.mood.value) return alert("Compila i campi!");
                 els.loader.classList.remove('hidden');
-                els.loaderText.innerText = "la tua cover è in arrivo..........";
-                
                 els.modificationPrompt.value = ''; 
                 state.mode = 'kindle';
                 state.lastActiveMode = 'kindle'; 
                 
+                let prompt;
+                const parts = [];
+
+                if (state.styleReferenceB64) {
+                     prompt = `Analyze this reference book cover image. 
+                     TASK: Generate a NEW book cover that mimics its EXACT art style, composition, color palette, and vibe.
+                     TITLE TO USE: "${els.titleInput.value}" (Replace the original title with this one).
+                     SUBJECT: "${els.mood.value}".
+                     CRITICAL: FULL BLEED WALLPAPER TEXTURE. NO BORDERS. 2:3 Vertical Portrait.`;
+                     parts.push({ text: prompt });
+                     parts.push({ inlineData: { mimeType: "image/jpeg", data: state.styleReferenceB64 } });
+                } else {
+                    const fullPrompt = `Create a high quality vertical book cover artwork (2:3 aspect ratio).
+                        Title: "${els.titleInput.value}". Theme: "${els.mood.value}". Style: ${document.getElementById('styleGenre').value}.
+                        INSTRUCTIONS: NO AUTHOR NAME. ONLY THE TITLE.
+                        CRITICAL: FULL BLEED IMAGE TEXTURE. NO BORDERS.`;
+                    parts.push({ text: fullPrompt });
+                }
+
                 try {
-                    console.log("Iniziando generazione professionale con Nano Banana...");
-                    const mockPrompt = (els.titleInput.value || "") + " " + (els.mood.value || "") + " book cover design, high quality, vertical aspect ratio";
-                    const randomSeed = Math.floor(Math.random() * 99999);
-                    const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(mockPrompt)}?width=800&height=1200&nologo=true&seed=${randomSeed}`;
+                // --- INIZIO CODICE DI TEST (POLLINATIONS) ---
+                // 1. Prepariamo il prompt base
+                const finalPrompt = (els.titleInput.value || "") + " " + (els.mood.value || "") + " book cover design, high quality, vertical aspect ratio";
+                console.log("Prompt inviato:", finalPrompt); // Per debug
 
-                    const response = await fetch(imageUrl);
-                    if (!response.ok) throw new Error("Errore nel download dell'immagine.");
-                    const blob = await response.blob();
+                // 2. Chiamiamo il generatore veloce e gratuito
+                // Usiamo un numero casuale (seed) per avere sempre immagini diverse
+                const randomSeed = Math.floor(Math.random() * 99999);
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=800&height=1200&nologo=true&seed=${randomSeed}`;
+                
+                console.log("Scaricando immagine da:", imageUrl);
 
-                    const reader = new FileReader();
-                    reader.onloadend = function() {
-                        console.log("Immagine generata con successo!");
-                        state.generatedImageB64 = reader.result;
-                        state.originalImageB64 = state.generatedImageB64;
-                        
-                        initKindleCanvas(); 
-                        
-                        els.modificationArea.classList.remove('hidden');
-                        els.designStudio.classList.remove('hidden');
-                        els.printSection.classList.remove('hidden');
-                        els.exportSection.classList.remove('hidden');
-                        
-                        if(typeof updatePrintCalculations === 'function') updatePrintCalculations();
-                        
-                        state.elements = [];
-                        state.idCounter = 0;
-                        
-                        els.loader.classList.add('hidden');
-                    }
-                    reader.readAsDataURL(blob);
+                // 3. Scarichiamo l'immagine
+                const response = await fetch(imageUrl);
+                if (!response.ok) throw new Error("Errore nel download dell'immagine di test");
+                const blob = await response.blob();
 
-                } catch (error) {
-                    console.error("ERRORE API:", error);
-                    alert("Errore generazione Nano Banana: " + error.message);
+                // 4. Convertiamo l'immagine per il tuo software (Base64)
+                const reader = new FileReader();
+                reader.onloadend = function() {
+                    console.log("Immagine convertita con successo!");
+                    state.generatedImageB64 = reader.result;
+                    state.originalImageB64 = state.generatedImageB64;
+                    
+                    // 5. Avviamo l'interfaccia (mostriamo i pannelli successivi)
+                    initKindleCanvas(); 
+                    
+                    els.modificationArea.classList.remove('hidden');
+                    els.designStudio.classList.remove('hidden');
+                    els.printSection.classList.remove('hidden');
+                    els.exportSection.classList.remove('hidden');
+                    
+                    // Se esiste la funzione, aggiorna i calcoli
+                    if(typeof updatePrintCalculations === 'function') updatePrintCalculations();
+                    
+                    // Reset variabili
+                    state.elements = [];
+                    state.idCounter = 0;
+                    
+                    // Nascondiamo il caricamento
                     els.loader.classList.add('hidden');
                 }
-            }
+                
+                // Avvia la lettura del file
+                reader.readAsDataURL(blob);
+                // --- FINE CODICE DI TEST ---
+
+            } catch (error) {
+                console.error("ERRORE:", error);
+                alert("Errore durante il test: " + error.message);
+                els.loader.classList.add('hidden');
+            }}
             
-            // --- MODIFIED RENDER AND DOWNLOAD FUNCTION (PAY-PER-DOWNLOAD) ---
+            // --- MODIFIED RENDER AND DOWNLOAD FUNCTION ---
             function renderAndDownload(type) {
                 if (!state.generatedImageB64 && !state.printFrontImage) return alert("Nessun design da esportare!");
+                els.loader.classList.remove('hidden'); // Show loader
+                els.loaderText.innerText = "Preparazione export alta risoluzione...";
 
-                let price, itemName;
-                if(type === 'kindle') {
-                    price = "10.00€"; itemName = "Kindle Cover HD (JPG)";
-                } else {
-                    price = "20.00€"; itemName = "KDP Print Layout (300DPI)";
-                }
-
-                if(confirm(`Vuoi procedere al pagamento di ${price} per scaricare ${itemName}?`)) {
-                    els.loader.classList.remove('hidden'); 
-                    els.loaderText.innerText = "Reindirizzamento a Stripe in corso...";
-                    setTimeout(() => {
-                        els.loaderText.innerText = "Pagamento riuscito! Generazione file...";
-                        setTimeout(() => { executeDownloadGeneration(type); }, 1000);
-                    }, 1500);
-                }
-            }
-
-            function executeDownloadGeneration(type) {
+                // Delay to allow UI to update
+                setTimeout(() => {
                     try {
                         const canvas = els.exportCanvas;
                         const ctx = canvas.getContext('2d');
+                        
                         let targetW, targetH;
                         let scaleFactor = 1;
 
                         if (type === 'kindle') {
-                            targetW = 1600; targetH = 2400;
+                            targetW = 1600;
+                            targetH = 2400;
                             const viewW = parseFloat(els.interactiveArea.style.width) || 400;
                             scaleFactor = targetW / viewW;
                         } else {
                             const calc = updatePrintCalculations();
-                            targetW = calc.pxW; targetH = calc.pxH;
+                            targetW = calc.pxW;
+                            targetH = calc.pxH;
+                            // Calculate scale based on current view width vs target high-res width
                             const viewW = parseFloat(els.interactiveArea.style.width);
                             if (!viewW) throw new Error("Errore dimensioni canvas. Riprova a generare il layout.");
                             scaleFactor = targetW / viewW;
                         }
 
-                        canvas.width = targetW; canvas.height = targetH;
+                        canvas.width = targetW;
+                        canvas.height = targetH;
                         
+                        // --- DRAWING FUNCTION ---
                         const performDraw = (bgImg) => {
+                            // 1. Draw Background/Structure
                             if (type === 'kindle') {
-                                 const r = bgImg.width / bgImg.height; const tr = targetW / targetH;
-                                 let dw, dh, dx, dy;
-                                 if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
-                                 else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
-                                 ctx.drawImage(bgImg, dx, dy, dw, dh);
+                                     // Draw BG centered/cover
+                                     const r = bgImg.width / bgImg.height;
+                                     const tr = targetW / targetH;
+                                     let dw, dh, dx, dy;
+                                     if(r > tr) { dh = targetH; dw = targetH * r; dx = (targetW-dw)/2; dy=0; }
+                                     else { dw = targetW; dh = targetW / r; dy = (targetH-dh)/2; dx=0; }
+                                     ctx.drawImage(bgImg, dx, dy, dw, dh);
                             } else {
-                                 const calc = updatePrintCalculations();
-                                 ctx.fillStyle = els.backColorInput.value; ctx.fillRect(0,0, targetW, targetH);
-                                 ctx.fillStyle = els.spineColorInput.value;
-                                 const spineStart = calc.bleedPx + calc.frontPx; 
-                                 ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
+                                     // Print Layout
+                                     const calc = updatePrintCalculations();
+                                     
+                                     // Fill Full Background (Back Color)
+                                     ctx.fillStyle = els.backColorInput.value; 
+                                     ctx.fillRect(0,0, targetW, targetH);
+                                     
+                                     // Fill Spine
+                                     ctx.fillStyle = els.spineColorInput.value;
+                                     const spineStart = calc.bleedPx + calc.frontPx; 
+                                     ctx.fillRect(spineStart, 0, calc.spinePx, targetH);
 
-                                 const fx = spineStart + calc.spinePx;
-                                 const fw = calc.frontPx + calc.bleedPx; const fh = targetH;
-                                 
-                                 const imgR = bgImg.width / bgImg.height;
-                                 const targetR = fw / fh;
-                                 let dW, dH, dX, dY;
-                                 if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
-                                 else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
-                                 
-                                 ctx.save(); ctx.beginPath(); ctx.rect(fx, 0, fw, fh); ctx.clip();
-                                 ctx.drawImage(bgImg, dX, dY, dW, dH);
-                                 ctx.restore();
+                                     // Draw Front Image
+                                     const fx = spineStart + calc.spinePx;
+                                     const fw = calc.frontPx + calc.bleedPx; 
+                                     const fh = targetH;
+                                     
+                                     const imgR = bgImg.width / bgImg.height;
+                                     const targetR = fw / fh;
+                                     let dW, dH, dX, dY;
+                                     if (imgR > targetR) { dH = fh; dW = fh * imgR; dX = fx + (fw - dW)/2; dY = 0; } 
+                                     else { dW = fw; dH = fw / imgR; dX = fx; dY = (fh - dH)/2; }
+                                     
+                                     ctx.save(); 
+                                     ctx.beginPath(); 
+                                     ctx.rect(fx, 0, fw, fh); 
+                                     ctx.clip();
+                                     ctx.drawImage(bgImg, dX, dY, dW, dH);
+                                     ctx.restore();
                             }
 
+                            // 2. Draw Elements (Text/Shapes)
                             state.elements.forEach(el => {
                                  ctx.save();
+                                 
+                                 // Get visual dimensions from DOM to handle text sizing accurately
                                  let rectW = 0, rectH = 0;
                                  const domEl = document.getElementById(el.id);
-                                 if (domEl) { rectW = domEl.offsetWidth; rectH = domEl.offsetHeight; } 
-                                 else { rectW = el.width || 100; rectH = el.height || el.width || 100; }
+                                 if (domEl) {
+                                     rectW = domEl.offsetWidth; 
+                                     rectH = domEl.offsetHeight;
+                                 } else {
+                                     // Fallback
+                                     rectW = el.width || 100;
+                                     rectH = el.height || el.width || 100;
+                                 }
 
                                  const scaledW = rectW * scaleFactor;
                                  const scaledH = rectH * scaleFactor;
@@ -1431,23 +1759,27 @@
                                  ctx.rotate(el.rotation * Math.PI / 180);
                                  ctx.globalAlpha = el.style.opacity || 1;
 
-                                 const drawX = -scaledW / 2; const drawY = -scaledH / 2;
+                                 const drawX = -scaledW / 2;
+                                 const drawY = -scaledH / 2;
                                  
                                  if(el.type === 'text') {
                                       const fSize = parseFloat(window.getComputedStyle(domEl).fontSize) * scaleFactor;
                                       ctx.font = `${el.style.fontWeight} ${el.style.fontStyle} ${fSize}px ${el.style.fontFamily.replace(/'/g, "")}`;
                                       ctx.fillStyle = el.style.color;
-                                      ctx.textBaseline = 'middle'; ctx.textAlign = el.style.textAlign || 'center';
+                                      ctx.textBaseline = 'middle'; 
+                                      ctx.textAlign = el.style.textAlign || 'center';
                                       
+                                      // Shadow
                                       if(el.shadowProps) {
-                                           ctx.shadowColor = el.shadowProps.color;
-                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                           const rad = el.shadowProps.angle * (Math.PI/180);
-                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                         ctx.shadowColor = el.shadowProps.color;
+                                         ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                         const rad = el.shadowProps.angle * (Math.PI/180);
+                                         ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                         ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
                                       }
 
-                                      let textX = 0; const paddingOffset = 4 * scaleFactor;
+                                      let textX = 0;
+                                      const paddingOffset = 4 * scaleFactor;
                                       if (el.style.textAlign === 'center') textX = 0;
                                       else if (el.style.textAlign === 'right') textX = (scaledW / 2) - paddingOffset;
                                       else textX = (-scaledW / 2) + paddingOffset;
@@ -1455,56 +1787,68 @@
                                       ctx.fillText(el.content, textX, 0); 
                                       
                                       if(parseFloat(el.style.webkitTextStrokeWidth) > 0) {
-                                           ctx.strokeStyle = el.style.webkitTextStrokeColor;
-                                           ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
-                                           ctx.strokeText(el.content, textX, 0); 
+                                         ctx.strokeStyle = el.style.webkitTextStrokeColor;
+                                         ctx.lineWidth = parseFloat(el.style.webkitTextStrokeWidth) * scaleFactor;
+                                         ctx.strokeText(el.content, textX, 0); 
                                       }
                                  } else if (el.type === 'image') {
                                       const img = domEl.querySelector('img');
-                                      if(img) { ctx.drawImage(img, drawX, drawY, scaledW, scaledH); }
+                                      if(img) {
+                                           ctx.drawImage(img, drawX, drawY, scaledW, scaledH);
+                                      }
                                  } else if (el.type === 'shape') {
                                       ctx.fillStyle = el.style.color;
+                                      // Shadow for shapes
                                       if(el.shadowProps) {
-                                           ctx.shadowColor = el.shadowProps.color;
-                                           ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
-                                           const rad = el.shadowProps.angle * (Math.PI/180);
-                                           ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
-                                           ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
+                                         ctx.shadowColor = el.shadowProps.color;
+                                         ctx.shadowBlur = el.shadowProps.blur * scaleFactor;
+                                         const rad = el.shadowProps.angle * (Math.PI/180);
+                                         ctx.shadowOffsetX = el.shadowProps.offset * Math.cos(rad) * scaleFactor;
+                                         ctx.shadowOffsetY = el.shadowProps.offset * Math.sin(rad) * scaleFactor;
                                       }
 
                                       if(el.shapeType === 'rect') {
-                                           const r = (el.borderRadius || 0) * scaleFactor;
-                                           ctx.beginPath();
-                                           ctx.moveTo(drawX + r, drawY);
-                                           ctx.lineTo(drawX + scaledW - r, drawY);
-                                           ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
-                                           ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
-                                           ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
-                                           ctx.lineTo(drawX + r, drawY + scaledH);
-                                           ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
-                                           ctx.lineTo(drawX, drawY + r);
-                                           ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
-                                           ctx.closePath();
-                                           ctx.fill();
+                                         // Draw Rounded Rect manually on canvas
+                                         const r = (el.borderRadius || 0) * scaleFactor;
+                                         ctx.beginPath();
+                                         ctx.moveTo(drawX + r, drawY);
+                                         ctx.lineTo(drawX + scaledW - r, drawY);
+                                         ctx.quadraticCurveTo(drawX + scaledW, drawY, drawX + scaledW, drawY + r);
+                                         ctx.lineTo(drawX + scaledW, drawY + scaledH - r);
+                                         ctx.quadraticCurveTo(drawX + scaledW, drawY + scaledH, drawX + scaledW - r, drawY + scaledH);
+                                         ctx.lineTo(drawX + r, drawY + scaledH);
+                                         ctx.quadraticCurveTo(drawX, drawY + scaledH, drawX, drawY + scaledH - r);
+                                         ctx.lineTo(drawX, drawY + r);
+                                         ctx.quadraticCurveTo(drawX, drawY, drawX + r, drawY);
+                                         ctx.closePath();
+                                         ctx.fill();
                                       }
                                       else if(el.shapeType === 'circle') {
-                                           ctx.beginPath(); ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); ctx.fill();
+                                         ctx.beginPath(); 
+                                         ctx.ellipse(0, 0, scaledW/2, scaledH/2, 0, 0, 2*Math.PI); 
+                                         ctx.fill();
                                       } 
                                       else if (el.shapeType === 'triangle') {
-                                           ctx.beginPath(); ctx.moveTo(0, -scaledH/2); ctx.lineTo(drawX + scaledW, drawY + scaledH); ctx.lineTo(drawX, drawY + scaledH); ctx.fill();
+                                         ctx.beginPath(); 
+                                         ctx.moveTo(0, -scaledH/2); 
+                                         ctx.lineTo(drawX + scaledW, drawY + scaledH); 
+                                         ctx.lineTo(drawX, drawY + scaledH); 
+                                         ctx.fill();
                                       }
                                       else {
-                                           ctx.fillRect(drawX, drawY, scaledW, scaledH); 
+                                         ctx.fillRect(drawX, drawY, scaledW, scaledH); // Fallback
                                       }
                                  }
+
                                  ctx.restore();
                             });
 
+                            // 4. Download
                             try {
                                 const link = document.createElement('a');
                                 link.download = `cover-${type}-${Date.now()}.jpg`;
                                 link.href = canvas.toDataURL('image/jpeg', 0.92);
-                                document.body.appendChild(link);
+                                document.body.appendChild(link); // Required for Firefox
                                 link.click();
                                 document.body.removeChild(link);
                             } catch(err) {
@@ -1513,6 +1857,7 @@
                             els.loader.classList.add('hidden');
                         };
 
+                        // Load Image and Run
                         const imgSource = (type === 'print' && state.printFrontImage) ? state.printFrontImage : state.generatedImageB64;
                         if (!imgSource) {
                             alert("Immagine sorgente mancante.");
@@ -1523,7 +1868,10 @@
                         const bgImg = new Image();
                         bgImg.crossOrigin = "anonymous";
                         bgImg.onload = () => performDraw(bgImg);
-                        bgImg.onerror = () => { alert("Errore caricamento immagine per esportazione."); els.loader.classList.add('hidden'); };
+                        bgImg.onerror = () => { 
+                            alert("Errore caricamento immagine per esportazione."); 
+                            els.loader.classList.add('hidden');
+                        };
                         bgImg.src = imgSource;
 
                     } catch(e) {
@@ -1531,8 +1879,10 @@
                         alert("Errore durante l'esportazione: " + e.message);
                         els.loader.classList.add('hidden');
                     }
+                }, 100);
             }
             
+            // FIXED EVENT LISTENERS FOR TOGGLES
             els.toggleBarcode.addEventListener('change', (e) => {
                 if(e.target.checked) els.barcodeArea.classList.remove('hidden');
                 else els.barcodeArea.classList.add('hidden');
@@ -1541,6 +1891,7 @@
             els.toggleGuides.addEventListener('change', (e) => {
                 if(e.target.checked) {
                     if(state.mode === 'paperback') {
+                          // Force redraw of guides if not present or just ensure they are visible
                           if (!state.paperbackLayout) state.paperbackLayout = updatePrintCalculations();
                           const viewW = parseFloat(els.interactiveArea.style.width);
                           const viewH = parseFloat(els.interactiveArea.style.height);
@@ -1550,10 +1901,11 @@
                 } else els.guidesOverlay.classList.add('hidden');
             });
 
-            // --- EVENT LISTENERS ---
+            // --- LISTENERS ---
             els.runAgentsBtn.addEventListener('click', generateBaseArtwork);
-            els.modifyArtworkBtn.addEventListener('click', () => { alert("Work in progress!"); });
-            els.undoBtn.addEventListener('click', () => { alert("Undo non disponibile nella demo."); });
+            // ... (Same listeners as original) ...
+            els.modifyArtworkBtn.addEventListener('click', () => { /* Add logic */ });
+            els.undoBtn.addEventListener('click', () => { /* Add logic */ });
             
             els.addGenericTextBtn.addEventListener('click', () => { addElement('text', ''); setTimeout(() => els.selectedTextInput.focus(), 50); });
             els.centerElementBtn.addEventListener('click', centerSelectedElement);
@@ -1590,6 +1942,7 @@
                 }
             });
 
+            // NEW SHAPE LISTENERS
             els.shapeWidthInput.addEventListener('input', (e) => {
                 els.shapeWidthDisplay.innerText = e.target.value + 'px';
                 updateSelectedElement('width', parseInt(e.target.value));
@@ -1598,6 +1951,8 @@
                 els.shapeHeightDisplay.innerText = e.target.value + 'px';
                 updateSelectedElement('height', parseInt(e.target.value));
             });
+
+            // NEW RADIUS LISTENER
             els.shapeRadiusInput.addEventListener('input', (e) => {
                 els.shapeRadiusDisplay.innerText = e.target.value + 'px';
                 updateSelectedElement('borderRadius', parseInt(e.target.value));
@@ -1635,8 +1990,9 @@
             els.styleRefInput.addEventListener('change', (e) => { const f = e.target.files[0]; if(f) { const r = new FileReader(); r.onload = (ev) => { state.styleReferenceB64 = ev.target.result.split(',')[1]; els.styleRefImg.src = ev.target.result; els.styleRefPreview.classList.remove('hidden'); els.clearStyleRef.classList.remove('hidden'); }; r.readAsDataURL(f); } });
             els.clearStyleRef.addEventListener('click', () => { state.styleReferenceB64 = null; els.styleRefInput.value = ''; els.styleRefPreview.classList.add('hidden'); els.clearStyleRef.classList.add('hidden'); });
 
+            // FIXED RESET LISTENER - ADDED HERE
             els.resetBtn.addEventListener('click', performReset);
-            
+
             els.addRectBtn.addEventListener('click', () => addElement('shape', 'rect'));
             els.addCircleBtn.addEventListener('click', () => addElement('shape', 'circle'));
             els.addBadgeBtn.addEventListener('click', () => addElement('shape', 'badge'));

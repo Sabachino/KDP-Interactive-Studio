@@ -1091,8 +1091,99 @@
                     els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
                     els.interactiveArea.style.backgroundSize = 'contain';
                 };
+                // --- FIX: Funzione corretta per centrare e scalare il Layout KDP ---
+            function initPaperbackMode() {
+                if(!state.generatedImageB64 && !state.printFrontImage) return alert("Genera prima la copertina o importa un'immagine!");
+                
+                // Flag per capire se stiamo rigenerando il layout (es. durante un resize) o se è la prima volta
+                const isResize = (state.mode === 'paperback'); 
+                const wasKindle = (state.mode === 'kindle');
+                
+                state.mode = 'paperback';
+                state.isSelectingArea = false;
+                els.selectionBox.style.display = 'none'; 
+                els.selectionControls.classList.add('hidden');
+                // Reset pulsante selezione
+                els.toggleSelectModeBtn.innerHTML = '<i class="fa-regular fa-square"></i> Definisci Area (Disegna Rettangolo)';
+                els.toggleSelectModeBtn.className = 'w-full bg-pink-500 hover:bg-pink-400 text-white text-shadow-black text-xs py-2 rounded shadow transition-colors flex items-center justify-center gap-2 font-bold mb-2';
+
+                const calc = updatePrintCalculations();
+                const ratio = calc.pxW / calc.pxH;
+                
+                // --- FIX: CALCOLO SCALA "CONTAIN" (ADATTA A SCHERMO) ---
+                // 1. Ottieni dimensioni disponibili nel contenitore (meno padding di sicurezza)
+                // Usiamo previewContainer come riferimento
+                const container = els.previewContainer;
+                const availableW = container.clientWidth - 60; // 60px di margine orizzontale
+                const availableH = container.clientHeight - 60; // 60px di margine verticale
+
+                // 2. Calcola le dimensioni target rispettando l'aspect ratio
+                let viewW = availableW;
+                let viewH = viewW / ratio;
+
+                // 3. Se l'altezza calcolata è maggiore dello spazio disponibile, ridimensiona basandosi sull'altezza
+                if (viewH > availableH) {
+                    viewH = availableH;
+                    viewW = viewH * ratio;
+                }
+                
+                // 4. Applica le dimensioni calcolate a #interactiveArea
+                // Il contenitore genitore (#previewContainer) ha già "flex" e "justify-center",
+                // quindi con le dimensioni esplicite il div andrà automaticamente al centro.
+                els.interactiveArea.style.width = viewW + 'px';
+                els.interactiveArea.style.height = viewH + 'px';
+                // -------------------------------------------------------
+
+                els.canvasDimensionsDisplay.classList.remove('hidden');
+                els.canvasDimensionsDisplay.innerHTML = `<i class="fa-solid fa-ruler-combined mr-2"></i>DIMENSIONE TOTALE FILE: <b>${calc.pxW} x ${calc.pxH} px</b> (300 DPI)`;
+                
+                // Generazione Background Canvas
+                const bgCanvas = document.createElement('canvas');
+                bgCanvas.width = calc.pxW; bgCanvas.height = calc.pxH;
+                const ctx = bgCanvas.getContext('2d');
+                
+                const frontImg = new Image();
+                frontImg.onload = () => {
+                    ctx.fillStyle = els.backColorInput.value; 
+                    ctx.fillRect(0,0, calc.pxW, calc.pxH);
+                    
+                    ctx.fillStyle = els.spineColorInput.value;
+                    const backCoverWidth = calc.bleedPx + calc.frontPx; 
+                    ctx.fillRect(backCoverWidth, 0, calc.spinePx, calc.pxH);
+
+                    const fx = backCoverWidth + calc.spinePx;
+                    let dW, dH, dX, dY;
+                    const fw = calc.frontPx + calc.bleedPx; 
+                    const fh = calc.pxH; 
+
+                    const imgR = frontImg.width / frontImg.height;
+                    const targetR = fw / fh;
+                    
+                    if (imgR > targetR) { 
+                        dH = fh; 
+                        dW = fh * imgR; 
+                        dX = fx + (fw - dW)/2; 
+                        dY = 0; 
+                    } else { 
+                        dW = fw; 
+                        dH = fw / imgR; 
+                        dX = fx; 
+                        dY = (fh - dH)/2; 
+                    }
+                    
+                    ctx.save(); 
+                    ctx.beginPath(); 
+                    ctx.rect(fx, 0, fw, fh); 
+                    ctx.clip();
+                    ctx.drawImage(frontImg, 0, 0, frontImg.width, frontImg.height, dX, dY, dW, dH);
+                    ctx.restore();
+                    
+                    els.interactiveArea.style.backgroundImage = `url(${bgCanvas.toDataURL()})`;
+                    els.interactiveArea.style.backgroundSize = 'contain'; // Fondamentale per vedere tutto
+                };
                 frontImg.src = state.printFrontImage || state.generatedImageB64;
                 
+                // Pulizia e Re-inserimento Overlay
                 els.interactiveArea.innerHTML = '';
                 els.interactiveArea.appendChild(els.guidesOverlay); 
                 els.interactiveArea.appendChild(els.barcodeArea); 
@@ -1101,73 +1192,92 @@
                 els.guidesOverlay.classList.add('hidden');
                 els.barcodeArea.classList.add('hidden');
                 
-                // --- FIX: Check switches immediately on mode switch ---
                 if(els.toggleBarcode.checked) els.barcodeArea.classList.remove('hidden');
                 if(els.toggleGuides.checked) {
                     drawKDPGuides(calc, viewW, viewH);
                     els.guidesOverlay.classList.remove('hidden');
                 }
 
-                // *** FIX BARCODE POSITION ***
+                // --- FIX: CALCOLO DEL FATTORE DI SCALA UNIVOCO ---
                 const scale = viewW / calc.pxW;
-                // Standard Barcode placement: Bottom Right of BACK COVER (Left Panel)
-                // Back Cover is: Bleed(Left) + PageWidth. 
-                // The spine starts at: Bleed + PageWidth.
-                // We want barcode typically 0.25" from Spine and 0.25" from Bottom.
                 
-                const marginInch = 0.35; // Safe margin for barcode
+                // Posizionamento Barcode visivo
+                const marginInch = 0.35; 
                 const marginPx = marginInch * 300; 
-                
-                // Width of the Back Cover panel (including bleed on the left edge)
                 const backCoverPanelWidth = calc.bleedPx + calc.frontPx; 
                 
-                // Barcode Dimensions (Standard ~2" x 1.2")
-                const barcodeW = 600 * 0.35; // Scale relatively
+                const barcodeW = 600 * 0.35; 
                 const barcodeH = 350 * 0.35;
                 
-                // Position X: Right edge of back cover - barcode width - margin
-                const barcodeLeftPx = backCoverPanelWidth - (barcodeW/scale) - marginPx;
+                // Calcolo posizioni scalate
+                const visualBackEnd = backCoverPanelWidth * scale;
+                const visualBarcodeLeft = visualBackEnd - (barcodeW / scale * scale) - (marginPx * scale); 
+                const visualBottom = viewH - (calc.bleedPx * scale) - (barcodeH / scale * scale) - (marginPx * scale);
                 
-                // Position Y: Bottom edge - bleed - barcode height - margin
-                const bottomYPx = calc.pxH - calc.bleedPx - (barcodeH/scale) - marginPx;
-                
-                // Convert to View Pixels
-                els.barcodeArea.style.width = '90px'; // Approx fixed visual size
+                els.barcodeArea.style.width = '90px'; 
                 els.barcodeArea.style.height = '55px';
                 
-                // Recalculate based on fixed visual px for better UX or stick to strict math?
-                // Sticking to visual approximation relative to scale for better preview
-                const visualBackEnd = backCoverPanelWidth * scale;
-                const visualBarcodeLeft = visualBackEnd - 100; // 90px width + 10px padding
-                const visualBottom = viewH - (calc.bleedPx * scale) - 70; // 55px height + 15px padding
-                
-                els.barcodeArea.style.left = visualBarcodeLeft + 'px';
-                els.barcodeArea.style.top = visualBottom + 'px';
+                // Applicazione posizioni
+                els.barcodeArea.style.left = (visualBarcodeLeft - 15) + 'px'; 
+                els.barcodeArea.style.top = (visualBottom + 10) + 'px'; 
 
                 els.paperbackTools.classList.remove('hidden');
                 els.spineTools.classList.remove('hidden'); 
                 els.downloadPrintBtn.classList.remove('hidden');
+                
                 state.paperbackLayout = calc;
                 state.canvasScale = scale;
                 
+                // --- GESTIONE MIGRAZIONE ELEMENTI (DA KINDLE A PAPERBACK) ---
                 if (wasKindle) {
-                    const kindleWidth = 400;
-                    const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
+                    const kindleWidth = 400; // Larghezza base Kindle mode
                     const frontCoverStartX = (calc.bleedPx + calc.frontPx + calc.spinePx) * scale;
+                    const frontCoverVisualWidth = (calc.frontPx + calc.bleedPx) * scale;
                     const elementScale = frontCoverVisualWidth / kindleWidth;
                     
                     state.elements.forEach(el => {
                         el.x = (el.x * elementScale) + frontCoverStartX;
                         el.y = (el.y * elementScale);
+                        
                         let fSize = parseFloat(el.style.fontSize);
                         el.style.fontSize = (fSize * elementScale) + 'px';
+                        
                         if(el.type === 'shape' || el.type === 'image') {
                             el.width = el.width * elementScale;
                             if(el.height) el.height = el.height * elementScale;
+                            if(el.borderRadius) el.borderRadius = el.borderRadius * elementScale;
                         }
                     });
                 }
                 
+                // Rerender elementi DOM
+                state.elements.forEach(el => renderElementDOM(el));
+
+                if (!isResize) {
+                    setTimeout(() => {
+                        els.spineTools.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                }
+            }
+
+            // --- EVENT LISTENERS ESISTENTI (Non modificarli, assicurati solo che ci siano) ---
+            // (Qui ometto quelli standard per brevità, assicurati che il codice precedente rimanga intatto fino a qui)
+            
+            // ... [Tutti gli altri listener che avevi già nel codice: addRectBtn, addCircleBtn, etc.] ...
+
+            // --- NUOVO LISTENER FONDAMENTALE PER IL RESIZE ---
+            // Questo assicura che se l'utente ridimensiona la finestra, il layout si ricalcoli e rimanga centrato
+            window.addEventListener('resize', () => {
+                if (state.mode === 'paperback') {
+                    // Richiama la funzione corretta che ora gestisce il resize senza errori
+                    requestAnimationFrame(() => initPaperbackMode());
+                }
+            });
+
+        }); // CHIUSURA document.addEventListener('DOMContentLoaded', ...)
+    </script>
+</body>
+</html>
                 state.elements.forEach(el => renderElementDOM(el));
 
                 setTimeout(() => {
